@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Pozadie ikony (zaoblený štvorec pre aplikáciu) -->
+  <rect width="512" height="512" rx="110" fill="#0A192F"/>
+
+  <!-- Hory / Vrcholy (Turistika, Ferraty) -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Zadný vrch -->
+    <path d="M210 280 L290 160 L360 280" opacity="0.4" />
+    <!-- Hlavný predný vrch -->
+    <path d="M110 320 L220 150 L310 290" />
+  </g>
+
+  <!-- Krivka trasy / Pohyb (Beh, Bike, Trail) -->
+  <path d="M100 390 C 180 390, 200 310, 280 320 C 340 328, 380 380, 420 310" 
+        fill="none" 
+        stroke="#00E676" 
+        stroke-width="28" 
+        stroke-linecap="round"/>
+
+  <!-- Mapový bod / Vyvrcholenie trasy (Mapa, Bod záujmu) -->
+  <circle cx="420" cy="310" r="20" fill="#0A192F" stroke="#00E676" stroke-width="12" />
+  
+  <!-- Akcent: Hviezda/Vrcholový bod na hlavnom štíte -->
+  <circle cx="220" cy="150" r="14" fill="#00E676" />
+</svg>
