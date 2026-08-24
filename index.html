@@ -37,10 +37,20 @@
       type="file"
       id="file"
       name="file"
-      accept="application/geo+json,application/vnd.geo+json,.geojson"
+      accept="application/geo+json,application/vnd.geo+json,.geojson,application/gpx+xml,.gpx"
     />
     <script type="module">
       import * as maplibregl from "https://unpkg.com/maplibre-gl@6.5.0/dist/maplibre-gl.mjs";
+      import {
+        parseTrack,
+        boundsOf,
+        createGeoJson,
+      } from "./script/geo-utils.js";
+      import { geoJsonToPoints } from "./script/geojson-to-points.js";
+
+      const DEFAULT_TRACK = "./data/Ovciarsko-Peklina.gpx";
+      const SOURCE_BASE = "source-base";
+      const SIMPLIFIED_BASE = "source-simplified";
 
       const map = new maplibregl.Map({
         container: "map",
@@ -49,52 +59,81 @@
         zoom: 8,
       });
 
-      function handleFileSelect(evt) {
+      map.on("load", async () => {
+        map.addSource(SOURCE_BASE, {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+
+        map.addSource(SIMPLIFIED_BASE, {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+
+        map.addLayer({
+          id: `${SOURCE_BASE}--lines`,
+          type: "line",
+          source: SOURCE_BASE,
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+          paint: {
+            "line-color": "#d7191c",
+            "line-width": 3,
+          },
+          filter: ["==", "$type", "LineString"],
+        });
+
+        map.addLayer({
+          id: `${SIMPLIFIED_BASE}--lines`,
+          type: "line",
+          source: SIMPLIFIED_BASE,
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+          paint: {
+            "line-color": "#2772b3",
+            "line-width": 3,
+          },
+          filter: ["==", "$type", "LineString"],
+        });
+
+        try {
+          const response = await fetch(DEFAULT_TRACK);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+          const content = await response.text();
+          const geoJsonData = parseTrack(DEFAULT_TRACK, content);
+          // showGeoJSON(geoJsonData);
+
+          const points = geoJsonToPoints(geoJsonData);
+          showPoints(points);
+        } catch (err) {
+          console.error(`Could not load ${DEFAULT_TRACK}:`, err);
+        }
+      });
+
+      function showGeoJSON(geoJSONcontent) {
+        map.getSource(SOURCE_BASE).setData(geoJSONcontent);
+
+        const bounds = boundsOf(geoJSONcontent);
+        if (bounds) map.fitBounds(bounds, { padding: 40 });
+      }
+
+      function showPoints(points) {
+        const geoJSONcontent = createGeoJson(points);
+
+        showGeoJSON(geoJSONcontent);
+      }
+
+      async function handleFileSelect(evt) {
         const file = evt.target.files[0]; // Read first selected file
+        if (!file) return;
 
-        const reader = new FileReader();
-
-        reader.onload = function (theFile) {
-          // Parse as (geo)JSON
-          const geoJSONcontent = JSON.parse(theFile.target.result);
-
-          // Add as source to the map
-          map.addSource("uploaded-source", {
-            type: "geojson",
-            data: geoJSONcontent,
-          });
-
-          map.addLayer({
-            id: "uploaded-lines",
-            type: "line",
-            source: "uploaded-source",
-            layout: {
-              "line-cap": "round",
-              "line-join": "round",
-            },
-            paint: {
-              "line-color": "#d7191c",
-              "line-width": 3,
-            },
-            filter: ["==", "$type", "LineString"],
-          });
-
-          map.addLayer({
-            id: "uploaded-points",
-            type: "circle",
-            source: "uploaded-source",
-            paint: {
-              "circle-radius": 5,
-              "circle-color": "#2c7fb8",
-              "circle-stroke-color": "#ffffff",
-              "circle-stroke-width": 2,
-            },
-            filter: ["==", "$type", "Point"],
-          });
-        };
-
-        // Read the GeoJSON as text
-        reader.readAsText(file, "UTF-8");
+        const content = await file.text();
+        showGeoJSON(parseTrack(file.name, content));
       }
 
       document
