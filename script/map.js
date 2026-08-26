@@ -4,6 +4,9 @@ import { boundsOf } from "./geo-utils.js";
 const CURSOR_SOURCE = "source-cursor";
 const CURSOR_LAYER = "source-cursor--point";
 
+/** Dark dashes read as "the reduced one" over any track color. */
+const SIMPLIFIED_COLOR = "#292d3c";
+
 /**
  * Creates the map and waits until it is ready to take sources and layers.
  * @param {string} container id of the container element
@@ -116,7 +119,55 @@ export function addTrackLayer(map, state) {
 }
 
 /**
- * Pushes the current style of a state onto its layer.
+ * Adds the simplified track as a second, dashed layer over the original.
+ * @param {*} map maplibre Map
+ * @param {*} state layer state with a filled simplify slot
+ */
+export function addSimplifiedLayer(map, state) {
+  map.addSource(simplifiedSourceId(state.id), {
+    type: "geojson",
+    data: state.simplify.processed.geoJson,
+  });
+
+  map.addLayer(
+    {
+      id: simplifiedLayerId(state.id),
+      type: "line",
+      source: simplifiedSourceId(state.id),
+      layout: { "line-join": "round" },
+      paint: {
+        "line-color": SIMPLIFIED_COLOR,
+        "line-width": 2,
+        "line-dasharray": [2, 1.5],
+      },
+    },
+    CURSOR_LAYER,
+  );
+}
+
+/**
+ * Feeds a new simplification to the map. The only call on the slider path.
+ * @param {*} map maplibre Map
+ * @param {*} state layer state
+ */
+export function updateSimplifiedData(map, state) {
+  map.getSource(simplifiedSourceId(state.id)).setData(
+    state.simplify.processed.geoJson,
+  );
+}
+
+/**
+ * Whether the simplified layer of a state is already on the map.
+ * @param {*} map maplibre Map
+ * @param {*} state layer state
+ * @returns {boolean}
+ */
+export function hasSimplifiedLayer(map, state) {
+  return Boolean(map.getLayer(simplifiedLayerId(state.id)));
+}
+
+/**
+ * Pushes the current style of a state onto its layers.
  * @param {*} map maplibre Map
  * @param {*} state layer state
  */
@@ -128,6 +179,15 @@ export function updateTrackStyle(map, state) {
   map.setPaintProperty(id, "line-width", width);
   map.setPaintProperty(id, "line-opacity", opacity);
   map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+
+  if (!hasSimplifiedLayer(map, state)) return;
+
+  // The reduced track only shows while the layer is shown and asked for
+  map.setLayoutProperty(
+    simplifiedLayerId(state.id),
+    "visibility",
+    visible && state.simplify?.active ? "visible" : "none",
+  );
 }
 
 /**
@@ -136,6 +196,11 @@ export function updateTrackStyle(map, state) {
  * @param {*} state layer state
  */
 export function removeTrackLayer(map, state) {
+  if (hasSimplifiedLayer(map, state)) {
+    map.removeLayer(simplifiedLayerId(state.id));
+    map.removeSource(simplifiedSourceId(state.id));
+  }
+
   map.removeLayer(lineLayerId(state.id));
   map.removeSource(state.id);
 }
@@ -158,4 +223,17 @@ export function fitToTrack(map, geoJSONcontent) {
  */
 function lineLayerId(stateId) {
   return `${stateId}--lines`;
+}
+
+/**
+ * Ids of the simplified twin of a layer.
+ * @param {string} stateId
+ * @returns {string}
+ */
+function simplifiedSourceId(stateId) {
+  return `${stateId}--simplified`;
+}
+
+function simplifiedLayerId(stateId) {
+  return `${stateId}--simplified-lines`;
 }

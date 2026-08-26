@@ -3,9 +3,14 @@ import {
   updateTrackStyle,
   removeTrackLayer,
   fitToTrack,
+  addSimplifiedLayer,
+  updateSimplifiedData,
+  hasSimplifiedLayer,
 } from "./map.js";
 import { estimateGPXFilesize, parseTrack, trackStats } from "./geo-utils.js";
 import { toggleGraph, hideGraph } from "./graph.js";
+import { prepare, applyTolerance, DEFAULT_TOLERANCE } from "./simplify.js";
+import { coordsToGpx, simplifiedName, saveGpx } from "./gpx-export.js";
 
 const PALETTE = [
   "#ef4444",
@@ -163,19 +168,17 @@ function createLayerItem(map, state) {
   info.title = "Show track details";
   info.addEventListener("click", () => toggleGraph(state, info));
 
-  const styleRows = element("div", "layerStyleRows");
-  const styleRowsInner = element("div", "layerStyleRowsInner");
-  styleRows.inert = true; // Folded away, so keep it out of tab order as well
-
   const style = element("button", "layerStyle");
   style.textContent = "🎨";
   style.title = "Edit line style";
-  style.addEventListener("click", () => {
-    const open = styleRows.classList.toggle("open");
+  const styleFold = createFoldout(style);
 
-    styleRows.inert = !open;
-    style.classList.toggle("active", open);
-  });
+  const simplify = element("button", "layerSimplify");
+  simplify.textContent = "✂️";
+  simplify.title = "Compare with a simplified track";
+  const simplifyFold = createFoldout(simplify, (open) =>
+    toggleSimplified(map, state, open, tolerance.input, simplifyMeta),
+  );
 
   const zoom = element("button", "layerZoom");
   zoom.textContent = "🔍";
@@ -212,12 +215,46 @@ function createLayerItem(map, state) {
     updateTrackStyle(map, state);
   });
 
-  styleRowsInner.append(createRow("Color", color), width.row, opacity.row);
-  styleRows.append(styleRowsInner);
+  const simplifyMeta = element("span", "layerMeta");
+
+  const tolerance = createSliderRow("Tolerance", {
+    min: 0,
+    max: 50,
+    step: 1,
+    value: DEFAULT_TOLERANCE,
+    format: (value) => `${value} m`,
+  });
+
+  const save = element("button", "layerSave");
+  save.textContent = "⬇ Save GPX";
+  save.addEventListener("click", () => {
+    const { processed, tolerance: meters } = state.simplify;
+
+    saveGpx(
+      simplifiedName(state.filename, meters),
+      coordsToGpx(processed.coords, state.name),
+    );
+  });
+
+  // One redraw per frame at most, since this one rewrites the line geometry
+  let frame = 0;
+  tolerance.input.addEventListener("input", () => {
+    if (frame) return;
+
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      applyTolerance(state, Number(tolerance.input.value));
+      updateSimplifiedData(map, state);
+      simplifyMeta.textContent = formatSimplified(state);
+    });
+  });
+
+  styleFold.inner.append(createRow("Color", color), width.row, opacity.row);
+  simplifyFold.inner.append(simplifyMeta, tolerance.row, save);
 
   head.append(dot, name);
-  actions.append(info, style, zoom, remove);
-  item.append(head, actions, styleRows);
+  actions.append(info, style, simplify, zoom, remove);
+  item.append(head, actions, styleFold.rows, simplifyFold.rows);
 
   return item;
 }
@@ -241,6 +278,69 @@ function createSliderRow(label, { min, max, step, value, format }) {
   });
 
   return { row: createRow(label, input, readout), input };
+}
+
+/**
+ * Turns a track's reduced twin on or off. The first turn on is the only one
+ * that pays for the algorithm; afterwards it is a visibility switch.
+ * @param {*} map maplibre Map
+ * @param {*} state layer state
+ * @param {boolean} open whether the fold was just opened
+ * @param {HTMLInputElement} input the tolerance slider
+ * @param {HTMLElement} meta the readout under the slider
+ */
+function toggleSimplified(map, state, open, input, meta) {
+  if (open) {
+    if (!state.simplify) prepare(state);
+
+    applyTolerance(state, Number(input.value));
+
+    if (hasSimplifiedLayer(map, state)) updateSimplifiedData(map, state);
+    else addSimplifiedLayer(map, state);
+
+    meta.textContent = formatSimplified(state);
+  }
+
+  state.simplify.active = open;
+  updateTrackStyle(map, state);
+}
+
+/**
+ * How much the current tolerance costs in points and in exported filesize.
+ * @param {*} state layer state with a simplification in place
+ * @returns {string} readable before and after
+ */
+function formatSimplified(state) {
+  const { pointCount, aproxSize } = state.simplify.processed;
+  const locale = (value) => value.toLocaleString("sk-SK");
+
+  return (
+    `${locale(state.pointCount)} → ${locale(pointCount)} points · ` +
+    `${state.aproxSize} → ${aproxSize}`
+  );
+}
+
+/**
+ * Builds a fold that a button opens and closes, animated by css.
+ * @param {HTMLElement} button the button that toggles the fold
+ * @param {(open: boolean) => void} [onToggle] runs after every toggle
+ * @returns {{ rows: HTMLElement, inner: HTMLElement }} fold and its content
+ */
+function createFoldout(button, onToggle) {
+  const rows = element("div", "layerFoldout");
+  const inner = element("div", "layerFoldoutInner");
+  rows.inert = true; // Folded away, so keep it out of tab order as well
+  rows.append(inner);
+
+  button.addEventListener("click", () => {
+    const open = rows.classList.toggle("open");
+
+    rows.inert = !open;
+    button.classList.toggle("active", open);
+    onToggle?.(open);
+  });
+
+  return { rows, inner };
 }
 
 /**

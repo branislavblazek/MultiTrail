@@ -120,6 +120,21 @@ export function trackStats(coords, threshold = 3) {
 }
 
 /**
+ * Projects coordinates onto a local plane in meters, so that distances along
+ * both axes are comparable. Good enough over the span of a single track.
+ * @param {[number, number, number?][]} coords [[lng, lat, ele?], ...]
+ * @returns {[number, number][]} [[x, y], ...] in meters
+ */
+export function projectToMeters(coords) {
+  const middleLat =
+    coords.reduce((sum, coord) => sum + coord[1], 0) / coords.length;
+  const kx = Math.cos((middleLat * Math.PI) / 180) * 111320;
+  const ky = 110540;
+
+  return coords.map(([lng, lat]) => [lng * kx, lat * ky]);
+}
+
+/**
  * Elevation of a track against the distance travelled, ready to be plotted.
  * @param {[number, number, number?][]} coords [[lng, lat, ele?], ...]
  * @returns {{ points: [number, number][], distance: number, minEle: number,
@@ -168,7 +183,7 @@ function haversine([lng1, lat1], [lng2, lat2]) {
 }
 
 export function estimateGPXFilesize(pointCount) {
-  const bytesPerPoint = 140; // Priemerná veľkosť 1 GPX bodu (<trkpt> + ele + time)
+  const bytesPerPoint = 72; // Priemerná veľkosť 1 GPX bodu (<trkpt> + ele)
   const xmlOverhead = 600; // XML hlavička, metadata a uzatváracie tagy
 
   const totalBytes = pointCount * bytesPerPoint + xmlOverhead;

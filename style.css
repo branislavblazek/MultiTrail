@@ -157,6 +157,7 @@ body,
 
 .layerInfo,
 .layerStyle,
+.layerSimplify,
 .layerZoom,
 .layerRemove {
   border: none;
@@ -173,7 +174,7 @@ body,
   }
 }
 
-.layerStyleRows {
+.layerFoldout {
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
@@ -188,14 +189,38 @@ body,
 }
 
 /* Wrapper the 0fr row can clip. Rows keep their own layout inside. */
-.layerStyleRowsInner {
+.layerFoldoutInner {
   overflow: hidden;
   min-height: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .layerStyleRows {
+  .layerFoldout {
     transition: none;
+  }
+}
+
+.layerMeta {
+  display: block;
+  margin-top: 4px;
+  color: var(--gray-color);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.layerSave {
+  margin-top: 6px;
+  width: 100%;
+  border: 1px solid var(--black-color);
+  border-radius: 10px;
+  background: none;
+  padding: 4px 0;
+  font-size: 11px;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
   }
 }
 
@@ -209,7 +234,7 @@ body,
 }
 
 .layerRowLabel {
-  width: 44px;
+  width: 58px;
 }
 
 .layerRowInput {
