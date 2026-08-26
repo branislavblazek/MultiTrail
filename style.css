@@ -105,12 +105,36 @@ body,
   gap: 6px;
 }
 
+.layerItemActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  margin-top: 2px;
+}
+
 .layerName {
   flex: 1;
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Filled while the track is shown, a bare ring once it is hidden */
+.layerDot {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background-color: currentColor;
+  cursor: pointer;
+
+  &.hollow {
+    background-color: transparent;
+  }
 }
 
 .layerColor {
@@ -131,26 +155,48 @@ body,
   }
 }
 
+.layerInfo,
+.layerStyle,
 .layerZoom,
 .layerRemove {
   border: none;
   background: none;
   border-radius: 6px;
-  padding: 2px 4px;
+  padding: 4px 6px;
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
 
-  &:hover {
+  &:hover,
+  &.active {
     background-color: var(--hover-color);
   }
 }
 
-.layerMeta {
-  display: block;
-  margin-top: 2px;
-  color: var(--gray-color);
-  font-size: 11px;
+.layerStyleRows {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.25s ease,
+    opacity 0.2s ease;
+
+  &.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+}
+
+/* Wrapper the 0fr row can clip. Rows keep their own layout inside. */
+.layerStyleRowsInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layerStyleRows {
+    transition: none;
+  }
 }
 
 .layerRow {
@@ -176,4 +222,103 @@ body,
   width: 38px;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+#graphPanel {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+  border-radius: 10px;
+  background-color: white;
+  padding: 10px;
+  transform: translateY(calc(100% + 12px));
+  transition: transform 0.3s ease-in-out;
+
+  &.active {
+    transform: translateY(0);
+  }
+}
+
+#graphHead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+#graphTitle {
+  flex: 1;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#graphStats {
+  margin-top: 2px;
+  color: var(--gray-color);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+#graphClose {
+  border: none;
+  background: none;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+}
+
+.graphChart {
+  position: relative;
+}
+
+.graphSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+.graphGrid {
+  stroke: var(--hover-color);
+}
+
+.graphLabel {
+  fill: var(--gray-color);
+  font-size: 11px;
+}
+
+.graphCursor line {
+  stroke: var(--gray-color);
+  stroke-dasharray: 3 3;
+}
+
+.graphTooltip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background-color: var(--black-color);
+  color: white;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.graphMessage {
+  margin: 16px 0;
+  color: var(--gray-color);
+  font-size: 11px;
+  text-align: center;
 }

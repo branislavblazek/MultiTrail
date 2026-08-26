@@ -24,9 +24,18 @@
       <input type="file" id="layerFile" accept=".gpx,.json,.geojson" />
       <div id="layerList"></div>
     </div>
+    <div id="graphPanel">
+      <div id="graphHead">
+        <span id="graphTitle"></span>
+        <button id="graphClose" title="Close details">✕</button>
+      </div>
+      <div id="graphStats"></div>
+      <div id="graphBody"></div>
+    </div>
     <script type="module">
       import { createMap } from "./script/map.js";
       import { initLayerPanel, initFileInput, pushLayer } from "./script/layer.js";
+      import { initGraphPanel } from "./script/graph.js";
 
       const DEFAULT_TRACK = "./data/Ovciarsko-Peklina.gpx";
 
@@ -34,6 +43,7 @@
 
       initLayerPanel();
       initFileInput(map);
+      initGraphPanel(map);
 
       try {
         const response = await fetch(DEFAULT_TRACK);

@@ -120,6 +120,35 @@ export function trackStats(coords, threshold = 3) {
 }
 
 /**
+ * Elevation of a track against the distance travelled, ready to be plotted.
+ * @param {[number, number, number?][]} coords [[lng, lat, ele?], ...]
+ * @returns {{ points: [number, number][], distance: number, minEle: number,
+ *   maxEle: number }|null} null when the track carries no elevation
+ */
+export function elevationProfile(coords) {
+  if (coords.length < 2) return null;
+  if (!coords.every((coord) => Number.isFinite(coord[2]))) return null;
+
+  const points = [[0, coords[0][2]]];
+
+  let distance = 0,
+    minEle = coords[0][2],
+    maxEle = coords[0][2];
+
+  for (let i = 1; i < coords.length; i++) {
+    const ele = coords[i][2];
+
+    distance += haversine(coords[i - 1], coords[i]);
+    points.push([distance, ele]);
+
+    if (ele < minEle) minEle = ele;
+    if (ele > maxEle) maxEle = ele;
+  }
+
+  return { points, distance, minEle, maxEle };
+}
+
+/**
  * Great-circle distance between two points.
  * @param {[number, number]} from [lng, lat]
  * @param {[number, number]} to [lng, lat]

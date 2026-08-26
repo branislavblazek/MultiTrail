@@ -1,6 +1,9 @@
 import * as maplibregl from "https://unpkg.com/maplibre-gl@6.5.0/dist/maplibre-gl.mjs";
 import { boundsOf } from "./geo-utils.js";
 
+const CURSOR_SOURCE = "source-cursor";
+const CURSOR_LAYER = "source-cursor--point";
+
 /**
  * Creates the map and waits until it is ready to take sources and layers.
  * @param {string} container id of the container element
@@ -14,9 +17,73 @@ export async function createMap(container) {
     zoom: 8,
   });
 
+  map.addControl(
+    new maplibregl.NavigationControl({ visualizePitch: true }),
+    "top-left",
+  );
+
+  map.addControl(
+    new maplibregl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: true,
+    }),
+    "top-left",
+  );
+
   await new Promise((resolve) => map.on("load", resolve));
 
+  addCursorLayer(map);
+
   return map;
+}
+
+/**
+ * Adds the empty layer that later marks the graph cursor.
+ * @param {*} map maplibre Map
+ */
+function addCursorLayer(map) {
+  map.addSource(CURSOR_SOURCE, {
+    type: "geojson",
+    data: { type: "FeatureCollection", features: [] },
+  });
+
+  map.addLayer({
+    id: CURSOR_LAYER,
+    type: "circle",
+    source: CURSOR_SOURCE,
+    layout: { visibility: "none" },
+    paint: {
+      "circle-radius": 5,
+      "circle-color": "#ffffff",
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff",
+    },
+  });
+}
+
+/**
+ * Puts the cursor point on a coordinate.
+ * @param {*} map maplibre Map
+ * @param {[number, number]} coord [lng, lat]
+ * @param {string} color color of the track being hovered
+ */
+export function showCursor(map, coord, color) {
+  map.getSource(CURSOR_SOURCE).setData({
+    type: "Feature",
+    geometry: { type: "Point", coordinates: coord },
+    properties: {},
+  });
+
+  map.setPaintProperty(CURSOR_LAYER, "circle-color", color);
+  map.setLayoutProperty(CURSOR_LAYER, "visibility", "visible");
+}
+
+/**
+ * Hides the cursor point.
+ * @param {*} map maplibre Map
+ */
+export function hideCursor(map) {
+  map.setLayoutProperty(CURSOR_LAYER, "visibility", "none");
 }
 
 /**
@@ -27,22 +94,25 @@ export async function createMap(container) {
 export function addTrackLayer(map, state) {
   map.addSource(state.id, { type: "geojson", data: state.geoJson });
 
-  map.addLayer({
-    id: lineLayerId(state.id),
-    type: "line",
-    source: state.id,
-    layout: {
-      "line-cap": "round",
-      "line-join": "round",
-      visibility: state.style.visible ? "visible" : "none",
+  map.addLayer(
+    {
+      id: lineLayerId(state.id),
+      type: "line",
+      source: state.id,
+      layout: {
+        "line-cap": "round",
+        "line-join": "round",
+        visibility: state.style.visible ? "visible" : "none",
+      },
+      paint: {
+        "line-color": state.style.color,
+        "line-width": state.style.width,
+        "line-opacity": state.style.opacity,
+      },
+      filter: ["==", "$type", "LineString"],
     },
-    paint: {
-      "line-color": state.style.color,
-      "line-width": state.style.width,
-      "line-opacity": state.style.opacity,
-    },
-    filter: ["==", "$type", "LineString"],
-  });
+    CURSOR_LAYER, // Tracks stack under the cursor point, never over it
+  );
 }
 
 /**

@@ -5,6 +5,7 @@ import {
   fitToTrack,
 } from "./map.js";
 import { estimateGPXFilesize, parseTrack, trackStats } from "./geo-utils.js";
+import { toggleGraph, hideGraph } from "./graph.js";
 
 const PALETTE = [
   "#ef4444",
@@ -109,13 +110,15 @@ function createState(filename, geoJson) {
  * @param {HTMLElement} item panel entry of the layer
  */
 function dropLayer(map, state, item) {
+  hideGraph(state.id); // Only closes when this layer is the one being graphed
   removeTrackLayer(map, state);
   layers.delete(state.id);
   item.remove();
 }
 
 /**
- * Builds the panel entry of a layer: visibility, color, zoom, remove, opacity.
+ * Builds the panel entry of a layer: visibility, color, zoom, remove and the
+ * style rows the palette button folds out.
  * @param {*} map maplibre Map
  * @param {*} state layer state
  * @returns {HTMLElement} panel entry
@@ -123,29 +126,56 @@ function dropLayer(map, state, item) {
 function createLayerItem(map, state) {
   const item = element("div", "layerItem");
   const head = element("div", "layerItemHead");
+  const actions = element("div", "layerItemActions");
 
-  const visible = element("input", "layerVisible");
-  visible.type = "checkbox";
-  visible.checked = state.style.visible;
-  visible.title = "Show track";
-  visible.addEventListener("change", () => {
-    state.style.visible = visible.checked;
+  const dot = element("button", "layerDot");
+  dot.style.color = state.style.color; // Both the fill and the ring follow it
+
+  const paintDot = () => {
+    dot.classList.toggle("hollow", !state.style.visible);
+    dot.title = state.style.visible ? "Hide track" : "Show track";
+    dot.setAttribute("aria-pressed", state.style.visible);
+    item.classList.toggle("dimmed", !state.style.visible);
+  };
+
+  paintDot();
+  dot.addEventListener("click", () => {
+    state.style.visible = !state.style.visible;
     updateTrackStyle(map, state);
-    item.classList.toggle("dimmed", !visible.checked);
+    paintDot();
   });
 
   const color = element("input", "layerColor");
   color.type = "color";
   color.value = state.style.color;
-  color.title = "Track color";
   color.addEventListener("input", () => {
     state.style.color = color.value;
+    dot.style.color = color.value;
     updateTrackStyle(map, state);
   });
 
   const name = element("span", "layerName");
   name.textContent = state.name;
   name.title = state.filename;
+
+  const info = element("button", "layerInfo");
+  info.textContent = "ℹ️";
+  info.title = "Show track details";
+  info.addEventListener("click", () => toggleGraph(state, info));
+
+  const styleRows = element("div", "layerStyleRows");
+  const styleRowsInner = element("div", "layerStyleRowsInner");
+  styleRows.inert = true; // Folded away, so keep it out of tab order as well
+
+  const style = element("button", "layerStyle");
+  style.textContent = "🎨";
+  style.title = "Edit line style";
+  style.addEventListener("click", () => {
+    const open = styleRows.classList.toggle("open");
+
+    styleRows.inert = !open;
+    style.classList.toggle("active", open);
+  });
 
   const zoom = element("button", "layerZoom");
   zoom.textContent = "🔍";
@@ -157,11 +187,6 @@ function createLayerItem(map, state) {
   remove.title = "Remove layer";
   remove.addEventListener("click", () => dropLayer(map, state, item));
 
-  const stats = element("span", "layerMeta");
-  stats.textContent = formatStats(state.stats);
-
-  const meta = element("span", "layerMeta");
-  meta.textContent = `${state.pointCount.toLocaleString("sk-SK")} points · ${state.aproxSize}`;
 
   const width = createSliderRow("Width", {
     min: 1,
@@ -187,24 +212,14 @@ function createLayerItem(map, state) {
     updateTrackStyle(map, state);
   });
 
-  head.append(visible, color, name, zoom, remove);
-  item.append(head, stats, meta, width.row, opacity.row);
+  styleRowsInner.append(createRow("Color", color), width.row, opacity.row);
+  styleRows.append(styleRowsInner);
+
+  head.append(dot, name);
+  actions.append(info, style, zoom, remove);
+  item.append(head, actions, styleRows);
 
   return item;
-}
-
-/**
- * One line out of the measured track stats.
- * @param {*} stats distance, ascent and descent in meters
- * @returns {string} readable summary
- */
-function formatStats({ distance, ascent, descent }) {
-  const parts = [`${(distance / 1000).toFixed(1)} km`];
-
-  if (ascent === null) parts.push("no elevation");
-  else parts.push(`↑ ${Math.round(ascent)} m`, `↓ ${Math.round(descent)} m`);
-
-  return parts.join(" · ");
 }
 
 /**
@@ -214,11 +229,6 @@ function formatStats({ distance, ascent, descent }) {
  * @returns {{ row: HTMLElement, input: HTMLInputElement }}
  */
 function createSliderRow(label, { min, max, step, value, format }) {
-  const row = element("div", "layerRow");
-
-  const name = element("span", "layerRowLabel");
-  name.textContent = label;
-
   const input = element("input", "layerRowInput");
   input.type = "range";
   Object.assign(input, { min, max, step, value });
@@ -230,9 +240,24 @@ function createSliderRow(label, { min, max, step, value, format }) {
     readout.textContent = format(Number(input.value));
   });
 
-  row.append(name, input, readout);
+  return { row: createRow(label, input, readout), input };
+}
 
-  return { row, input };
+/**
+ * Builds a labelled row of the style panel.
+ * @param {string} label text in front of the controls
+ * @param {...HTMLElement} controls
+ * @returns {HTMLElement} the row
+ */
+function createRow(label, ...controls) {
+  const row = element("div", "layerRow");
+
+  const name = element("span", "layerRowLabel");
+  name.textContent = label;
+
+  row.append(name, ...controls);
+
+  return row;
 }
 
 /**
