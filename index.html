@@ -12,133 +12,37 @@
       rel="stylesheet"
       href="https://unpkg.com/maplibre-gl@6.5.0/dist/maplibre-gl.css"
     />
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-      }
-      html,
-      body,
-      #map {
-        height: 100%;
-      }
-    </style>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <style>
-      #file {
-        position: absolute;
-        top: 0;
-        left: 0;
-      }
-    </style>
     <div id="map"></div>
-    <input
-      type="file"
-      id="file"
-      name="file"
-      accept="application/geo+json,application/vnd.geo+json,.geojson,application/gpx+xml,.gpx"
-    />
+    <button id="layerButton">🛠️</button>
+    <div id="layerPanel" class="active">
+      <span id="layerHint"
+        >Create a layer by submitting a file (.gpx, .json, .geojson).</span
+      >
+      <input type="file" id="layerFile" accept=".gpx,.json,.geojson" />
+      <div id="layerList"></div>
+    </div>
     <script type="module">
-      import * as maplibregl from "https://unpkg.com/maplibre-gl@6.5.0/dist/maplibre-gl.mjs";
-      import {
-        parseTrack,
-        boundsOf,
-        createGeoJson,
-      } from "./script/geo-utils.js";
-      import { geoJsonToPoints } from "./script/geojson-to-points.js";
+      import { createMap } from "./script/map.js";
+      import { initLayerPanel, initFileInput, pushLayer } from "./script/layer.js";
 
       const DEFAULT_TRACK = "./data/Ovciarsko-Peklina.gpx";
-      const SOURCE_BASE = "source-base";
-      const SIMPLIFIED_BASE = "source-simplified";
 
-      const map = new maplibregl.Map({
-        container: "map",
-        style: "https://tiles.openfreemap.org/styles/bright",
-        center: [18, 49],
-        zoom: 8,
-      });
+      const map = await createMap("map");
 
-      map.on("load", async () => {
-        map.addSource(SOURCE_BASE, {
-          type: "geojson",
-          data: { type: "FeatureCollection", features: [] },
-        });
+      initLayerPanel();
+      initFileInput(map);
 
-        map.addSource(SIMPLIFIED_BASE, {
-          type: "geojson",
-          data: { type: "FeatureCollection", features: [] },
-        });
+      try {
+        const response = await fetch(DEFAULT_TRACK);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        map.addLayer({
-          id: `${SOURCE_BASE}--lines`,
-          type: "line",
-          source: SOURCE_BASE,
-          layout: {
-            "line-cap": "round",
-            "line-join": "round",
-          },
-          paint: {
-            "line-color": "#d7191c",
-            "line-width": 3,
-          },
-          filter: ["==", "$type", "LineString"],
-        });
-
-        map.addLayer({
-          id: `${SIMPLIFIED_BASE}--lines`,
-          type: "line",
-          source: SIMPLIFIED_BASE,
-          layout: {
-            "line-cap": "round",
-            "line-join": "round",
-          },
-          paint: {
-            "line-color": "#2772b3",
-            "line-width": 3,
-          },
-          filter: ["==", "$type", "LineString"],
-        });
-
-        try {
-          const response = await fetch(DEFAULT_TRACK);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-          const content = await response.text();
-          const geoJsonData = parseTrack(DEFAULT_TRACK, content);
-          // showGeoJSON(geoJsonData);
-
-          const points = geoJsonToPoints(geoJsonData);
-          showPoints(points);
-        } catch (err) {
-          console.error(`Could not load ${DEFAULT_TRACK}:`, err);
-        }
-      });
-
-      function showGeoJSON(geoJSONcontent) {
-        map.getSource(SOURCE_BASE).setData(geoJSONcontent);
-
-        const bounds = boundsOf(geoJSONcontent);
-        if (bounds) map.fitBounds(bounds, { padding: 40 });
+        pushLayer(map, DEFAULT_TRACK, await response.text());
+      } catch (err) {
+        console.error(`Could not load ${DEFAULT_TRACK}:`, err);
       }
-
-      function showPoints(points) {
-        const geoJSONcontent = createGeoJson(points);
-
-        showGeoJSON(geoJSONcontent);
-      }
-
-      async function handleFileSelect(evt) {
-        const file = evt.target.files[0]; // Read first selected file
-        if (!file) return;
-
-        const content = await file.text();
-        showGeoJSON(parseTrack(file.name, content));
-      }
-
-      document
-        .getElementById("file")
-        .addEventListener("change", handleFileSelect, false);
     </script>
   </body>
 </html>

@@ -1,5 +1,7 @@
 import { gpxToGeoJson } from "./gpx-to-geojson.js";
 
+const EARTH_RADIUS = 6371008.8; // Mean earth radius in meters
+
 /**
  * Treats GPX file or GeoJson file as GeoJson object.
  * @param {string} name filename
@@ -75,4 +77,78 @@ export function createGeoJson(points) {
       coordinates: points,
     },
   };
+}
+
+/**
+ * Length, ascent and descent of a track.
+ * Ascent/descent need elevation in the third coordinate and use hysteresis,
+ * so that GPS noise does not pile up into hundreds of false meters.
+ * @param {[number, number, number?][]} coords [[lng, lat, ele?], ...]
+ * @param {number} threshold meters of elevation change that count as real
+ * @returns {{ distance: number, ascent: number|null, descent: number|null }}
+ */
+export function trackStats(coords, threshold = 3) {
+  if (coords.length < 2) return { distance: 0, ascent: null, descent: null };
+
+  const hasElevation = coords.every((coord) => Number.isFinite(coord[2]));
+
+  let distance = 0,
+    ascent = 0,
+    descent = 0,
+    reference = hasElevation ? coords[0][2] : 0;
+
+  for (let i = 1; i < coords.length; i++) {
+    distance += haversine(coords[i - 1], coords[i]);
+    if (!hasElevation) continue;
+
+    const delta = coords[i][2] - reference;
+
+    if (delta > threshold) {
+      ascent += delta;
+      reference = coords[i][2];
+    } else if (delta < -threshold) {
+      descent -= delta;
+      reference = coords[i][2];
+    }
+  }
+
+  return {
+    distance,
+    ascent: hasElevation ? ascent : null,
+    descent: hasElevation ? descent : null,
+  };
+}
+
+/**
+ * Great-circle distance between two points.
+ * @param {[number, number]} from [lng, lat]
+ * @param {[number, number]} to [lng, lat]
+ * @returns {number} meters
+ */
+function haversine([lng1, lat1], [lng2, lat2]) {
+  const rad = Math.PI / 180;
+  const f1 = lat1 * rad,
+    f2 = lat2 * rad;
+  const df = f2 - f1,
+    dl = (lng2 - lng1) * rad;
+
+  const a =
+    Math.sin(df / 2) ** 2 + Math.cos(f1) * Math.cos(f2) * Math.sin(dl / 2) ** 2;
+
+  return 2 * EARTH_RADIUS * Math.asin(Math.sqrt(a));
+}
+
+export function estimateGPXFilesize(pointCount) {
+  const bytesPerPoint = 140; // Priemerná veľkosť 1 GPX bodu (<trkpt> + ele + time)
+  const xmlOverhead = 600; // XML hlavička, metadata a uzatváracie tagy
+
+  const totalBytes = pointCount * bytesPerPoint + xmlOverhead;
+
+  if (totalBytes < 1024) {
+    return totalBytes + " B";
+  } else if (totalBytes < 1024 * 1024) {
+    return (totalBytes / 1024).toFixed(1) + " KB";
+  } else {
+    return (totalBytes / (1024 * 1024)).toFixed(2) + " MB";
+  }
 }

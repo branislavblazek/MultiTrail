@@ -13,13 +13,13 @@
   <!-- Krivka trasy / Pohyb (Beh, Bike, Trail) -->
   <path d="M100 390 C 180 390, 200 310, 280 320 C 340 328, 380 380, 420 310" 
         fill="none" 
-        stroke="#00E676" 
+        stroke="#56E39F" 
         stroke-width="28" 
         stroke-linecap="round"/>
 
   <!-- Mapový bod / Vyvrcholenie trasy (Mapa, Bod záujmu) -->
-  <circle cx="420" cy="310" r="20" fill="#0A192F" stroke="#00E676" stroke-width="12" />
+  <circle cx="420" cy="310" r="20" fill="#0A192F" stroke="#56E39F" stroke-width="12" />
   
   <!-- Akcent: Hviezda/Vrcholový bod na hlavnom štíte -->
-  <circle cx="220" cy="150" r="14" fill="#00E676" />
+  <circle cx="220" cy="150" r="14" fill="#56E39F" />
 </svg>

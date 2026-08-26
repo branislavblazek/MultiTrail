@@ -1,0 +1,179 @@
+:root {
+  --green-color: #56e39f;
+  --black-color: #292d3c;
+  --gray-color: #5c6066;
+  --hover-color: #f0f1f2;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: var(--black-color);
+}
+
+html,
+body,
+#map {
+  height: 100%;
+}
+
+#layerButton {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  border-radius: 12px;
+  border: none;
+  background-color: white;
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+}
+
+#layerPanel {
+  position: absolute;
+  top: 56px;
+  right: -100%;
+  border-radius: 10px;
+  border: none;
+  max-height: calc(100% - 120px);
+  overflow: scroll;
+  background-color: white;
+  width: 300px;
+  min-height: 200px;
+  transition: right 0.3s ease-in-out;
+  padding: 10px;
+
+  &.active {
+    right: 12px;
+  }
+
+  #layerHint {
+    color: var(--color-black);
+    font-size: 11px;
+  }
+
+  #layerFile {
+    border: 1px dashed var(--black-color);
+    border-radius: 10px;
+    padding: 4px 0 4px 0;
+    width: 100%;
+    margin-top: 6px;
+    font-size: 11px;
+
+    &::file-selector-button {
+      border: none;
+      background: none;
+      font-size: 11px;
+    }
+
+    &:hover {
+      background-color: var(--hover-color);
+    }
+  }
+}
+
+#layerList {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.layerItem {
+  border: 1px solid var(--gray-color);
+  border-radius: 10px;
+  padding: 6px 8px;
+
+  &.dimmed {
+    opacity: 0.5;
+  }
+}
+
+.layerItemHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.layerName {
+  flex: 1;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.layerColor {
+  border: none;
+  background: none;
+  padding: 0;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+
+  &::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  &::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+  }
+}
+
+.layerZoom,
+.layerRemove {
+  border: none;
+  background: none;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+}
+
+.layerMeta {
+  display: block;
+  margin-top: 2px;
+  color: var(--gray-color);
+  font-size: 11px;
+}
+
+.layerRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  color: var(--gray-color);
+  font-size: 11px;
+}
+
+.layerRowLabel {
+  width: 44px;
+}
+
+.layerRowInput {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--green-color);
+}
+
+.layerRowValue {
+  width: 38px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
