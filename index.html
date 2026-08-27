@@ -34,10 +34,14 @@
     </div>
     <script type="module">
       import { createMap } from "./script/map.js";
-      import { initLayerPanel, initFileInput, pushLayer } from "./script/layer.js";
+      import {
+        initLayerPanel,
+        initFileInput,
+        pushLayer,
+      } from "./script/layer.js";
       import { initGraphPanel } from "./script/graph.js";
 
-      const DEFAULT_TRACK = "./data/Ovciarsko-Peklina.gpx";
+      const DEFAULT_TRACK = "./data/demo.geojson";
 
       const map = await createMap("map");
 
