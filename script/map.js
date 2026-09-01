@@ -2,7 +2,9 @@ import * as maplibregl from "https://unpkg.com/maplibre-gl@6.5.0/dist/maplibre-g
 import { boundsOf } from "./geo-utils.js";
 
 const CURSOR_SOURCE = "source-cursor";
-const CURSOR_LAYER = "source-cursor--point";
+
+/** Exported so other layers can stack themselves under the cursor point. */
+export const CURSOR_LAYER = "source-cursor--point";
 
 /** Dark dashes read as "the reduced one" over any track color. */
 const SIMPLIFIED_COLOR = "#292d3c";
@@ -18,11 +20,12 @@ export async function createMap(container) {
     style: "https://tiles.openfreemap.org/styles/bright",
     center: [18, 49],
     zoom: 8,
+    attributionControl: { compact: true },
   });
 
   map.addControl(
     new maplibregl.NavigationControl({ visualizePitch: true }),
-    "top-left",
+    "bottom-right",
   );
 
   map.addControl(
@@ -30,7 +33,7 @@ export async function createMap(container) {
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true,
     }),
-    "top-left",
+    "bottom-right",
   );
 
   await new Promise((resolve) => map.on("load", resolve));
@@ -38,6 +41,25 @@ export async function createMap(container) {
   addCursorLayer(map);
 
   return map;
+}
+
+/**
+ * Opens a popup with content built elsewhere. The only place that touches
+ * maplibre directly, so nothing else has to import it.
+ * @param {*} map maplibre Map
+ * @param {*} lngLat where to anchor it
+ * @param {HTMLElement} content
+ * @returns {*} the popup, to remove later
+ */
+export function showPopup(map, lngLat, content) {
+  return new maplibregl.Popup({
+    closeButton: false,
+    offset: 12,
+    maxWidth: "260px",
+  })
+    .setLngLat(lngLat)
+    .setDOMContent(content)
+    .addTo(map);
 }
 
 /**
@@ -151,9 +173,9 @@ export function addSimplifiedLayer(map, state) {
  * @param {*} state layer state
  */
 export function updateSimplifiedData(map, state) {
-  map.getSource(simplifiedSourceId(state.id)).setData(
-    state.simplify.processed.geoJson,
-  );
+  map
+    .getSource(simplifiedSourceId(state.id))
+    .setData(state.simplify.processed.geoJson);
 }
 
 /**

@@ -42,13 +42,27 @@ export function prepare(state) {
  * @param {number} tolerance meters
  */
 export function applyTolerance(state, tolerance) {
-  const { coords, sig } = state.simplify;
-  const reduced = coords.filter((_, index) => sig[index] >= tolerance);
+  const reduced = reduceAt(state.simplify, tolerance);
 
   state.simplify.tolerance = tolerance;
   state.simplify.processed = {
+    ...reduced,
+    geoJson: createGeoJson(reduced.coords),
+  };
+}
+
+/**
+ * Simplifies to a tolerance without storing anything, so publishing can ask
+ * for a second reduction without disturbing what is on the map.
+ * @param {*} simplify the prepared simplify slot of a state
+ * @param {number} tolerance meters
+ * @returns {{ coords: *, pointCount: number, aproxSize: string }}
+ */
+export function reduceAt({ coords, sig }, tolerance) {
+  const reduced = coords.filter((_, index) => sig[index] >= tolerance);
+
+  return {
     coords: reduced,
-    geoJson: createGeoJson(reduced),
     pointCount: reduced.length,
     aproxSize: estimateGPXFilesize(reduced.length),
   };

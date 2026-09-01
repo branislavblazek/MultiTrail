@@ -3,12 +3,34 @@
   --black-color: #292d3c;
   --gray-color: #5c6066;
   --hover-color: #f0f1f2;
+  --press-color: #e2e4e6;
+
+  /* Every size in one place. Roles, not a scale: icons keep their size when
+     a title grows. */
+  --font-map-button: 1rem;
+  --font-title: 13px;
+  --font-icon: 13px;
+  --font-body: 12px;
+  --font-meta: 11px;
+  --font-block: 10px;
+
+  /* Maplibre puts every control corner at z-index 2, ours go above it.
+     The popup closes when the detail opens, so those two never meet. */
+  --z-panel: 5;
+  --z-popup: 6;
+  --z-detail: 7;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden;
   font-family:
     system-ui,
     -apple-system,
@@ -22,31 +44,267 @@ body,
   height: 100%;
 }
 
+html,
+body {
+  overflow: hidden;
+}
+
+#trailButton,
 #layerButton {
-  position: absolute;
-  right: 12px;
+  position: fixed;
+  z-index: var(--z-panel);
   top: 12px;
   border-radius: 12px;
   border: none;
   background-color: white;
   width: 32px;
   height: 32px;
-  font-size: 1rem;
+  font-size: var(--font-map-button);
   cursor: pointer;
 
   &:hover {
     background-color: var(--hover-color);
   }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+}
+
+#trailButton {
+  left: 12px;
+}
+
+#layerButton {
+  right: 12px;
+}
+
+#trailPanel {
+  position: fixed;
+  z-index: var(--z-panel);
+  top: 56px;
+  left: -100%;
+  border-radius: 10px;
+  max-height: calc(100% - 120px);
+  overflow: auto;
+  background-color: white;
+  width: 300px;
+  transition: left 0.3s ease-in-out;
+  padding: 10px;
+
+  &.active {
+    left: 12px;
+  }
+}
+
+#trailHead {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+#trailTitle {
+  flex: 1;
+  font-size: var(--font-title);
+}
+
+#trailCount {
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+#trailClose {
+  border: none;
+  background: none;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: var(--font-icon);
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+}
+
+#trailFilter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.trailSearch,
+.trailNumber,
+.trailSelect {
+  border: 1px solid var(--hover-color);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font: inherit;
+  font-size: var(--font-meta);
+  color: inherit;
+  background-color: white;
+
+  &:focus {
+    outline: none;
+    border-color: var(--gray-color);
+  }
+}
+
+.trailSearch {
+  width: 100%;
+}
+
+.trailNumber {
+  width: 52px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trailSelect {
+  flex: 1;
+  min-width: 0;
+}
+
+.trailRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+}
+
+.trailRowLabel {
+  width: 58px;
+  flex: none;
+}
+
+.trailUnit {
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+}
+
+.trailCheck {
+  accent-color: var(--green-color);
+}
+
+.trailChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.trailChip {
+  border: 1px solid var(--hover-color);
+  border-radius: 10px;
+  background: none;
+  padding: 2px 8px;
+  font-size: var(--font-meta);
+  color: var(--gray-color);
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+
+  &.on {
+    border-color: var(--black-color);
+    color: var(--black-color);
+  }
+}
+
+.trailReset {
+  margin-top: 2px;
+  border: none;
+  background: none;
+  padding: 2px 0;
+  font-size: var(--font-meta);
+  color: var(--gray-color);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--black-color);
+  }
+
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+#trailList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  border-top: 1px solid var(--hover-color);
+  padding-top: 8px;
+}
+
+.trailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: none;
+  padding: 5px 8px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+
+  &.picked {
+    border-color: var(--black-color);
+  }
+}
+
+.trailItemName {
+  font-size: var(--font-title);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trailItemMeta {
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.trailEmpty {
+  margin: 8px 0;
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+  text-align: center;
 }
 
 #layerPanel {
-  position: absolute;
+  position: fixed;
+  z-index: var(--z-panel);
   top: 56px;
   right: -100%;
   border-radius: 10px;
   border: none;
   max-height: calc(100% - 120px);
-  overflow: scroll;
+  overflow: auto;
   background-color: white;
   width: 300px;
   min-height: 200px;
@@ -59,7 +317,7 @@ body,
 
   #layerHint {
     color: var(--color-black);
-    font-size: 11px;
+    font-size: var(--font-meta);
   }
 
   #layerFile {
@@ -68,12 +326,12 @@ body,
     padding: 4px 0 4px 0;
     width: 100%;
     margin-top: 6px;
-    font-size: 11px;
+    font-size: var(--font-meta);
 
     &::file-selector-button {
       border: none;
       background: none;
-      font-size: 11px;
+      font-size: var(--font-meta);
     }
 
     &:hover {
@@ -115,7 +373,7 @@ body,
 
 .layerName {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--font-title);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -134,6 +392,10 @@ body,
 
   &.hollow {
     background-color: transparent;
+  }
+
+  &:active {
+    transform: scale(0.9);
   }
 }
 
@@ -155,22 +417,49 @@ body,
   }
 }
 
+.layerWarning {
+  flex: none;
+  font-size: var(--font-meta);
+  cursor: help;
+}
+
+.layerSlugInput {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--hover-color);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font: inherit;
+  font-size: var(--font-meta);
+  color: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: var(--gray-color);
+  }
+}
+
 .layerInfo,
 .layerStyle,
 .layerSimplify,
+.layerPublish,
 .layerZoom,
 .layerRemove {
   border: none;
   background: none;
   border-radius: 6px;
   padding: 4px 6px;
-  font-size: 13px;
+  font-size: var(--font-icon);
   line-height: 1;
   cursor: pointer;
 
   &:hover,
   &.active {
     background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
   }
 }
 
@@ -204,8 +493,20 @@ body,
   display: block;
   margin-top: 4px;
   color: var(--gray-color);
-  font-size: 11px;
+  font-size: var(--font-meta);
   font-variant-numeric: tabular-nums;
+}
+
+.layerBlock {
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid var(--hover-color);
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-family: ui-monospace, monospace;
+  font-size: var(--font-block);
+  color: inherit;
+  resize: vertical;
 }
 
 .layerSave {
@@ -215,12 +516,16 @@ body,
   border-radius: 10px;
   background: none;
   padding: 4px 0;
-  font-size: 11px;
+  font-size: var(--font-meta);
   color: inherit;
   cursor: pointer;
 
   &:hover {
     background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
   }
 }
 
@@ -230,7 +535,7 @@ body,
   gap: 6px;
   margin-top: 4px;
   color: var(--gray-color);
-  font-size: 11px;
+  font-size: var(--font-meta);
 }
 
 .layerRowLabel {
@@ -249,8 +554,9 @@ body,
   font-variant-numeric: tabular-nums;
 }
 
-#graphPanel {
-  position: absolute;
+#detailPanel {
+  position: fixed;
+  z-index: var(--z-detail);
   left: 12px;
   right: 12px;
   bottom: 12px;
@@ -267,38 +573,42 @@ body,
   }
 }
 
-#graphHead {
+#detailHead {
   display: flex;
   align-items: baseline;
   gap: 8px;
 }
 
-#graphTitle {
+#detailTitle {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--font-title);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-#graphStats {
+#detailMeta {
   margin-top: 2px;
   color: var(--gray-color);
-  font-size: 11px;
+  font-size: var(--font-meta);
   font-variant-numeric: tabular-nums;
 }
 
-#graphClose {
+#detailClose {
   border: none;
   background: none;
   border-radius: 6px;
   padding: 2px 4px;
-  font-size: 13px;
+  font-size: var(--font-icon);
   line-height: 1;
   cursor: pointer;
 
   &:hover {
     background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
   }
 }
 
@@ -319,7 +629,7 @@ body,
 
 .graphLabel {
   fill: var(--gray-color);
-  font-size: 11px;
+  font-size: var(--font-meta);
 }
 
 .graphCursor line {
@@ -336,7 +646,7 @@ body,
   color: white;
   border-radius: 6px;
   padding: 2px 6px;
-  font-size: 11px;
+  font-size: var(--font-meta);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -344,6 +654,94 @@ body,
 .graphMessage {
   margin: 16px 0;
   color: var(--gray-color);
-  font-size: 11px;
+  font-size: var(--font-meta);
   text-align: center;
+}
+
+.trailPopup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-title);
+}
+
+.trailPopupMeta {
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.trailPopupOpen {
+  align-self: start;
+  border: 1px solid var(--black-color);
+  border-radius: 10px;
+  background: none;
+  padding: 2px 10px;
+  font: inherit;
+  font-size: var(--font-meta);
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+}
+
+.trailDescription {
+  margin: 6px 0 0;
+  font-size: var(--font-body);
+  line-height: 1.5;
+}
+
+.trailProfile {
+  margin-top: 6px;
+}
+
+.trailNote {
+  margin: 8px 0;
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+}
+
+.trailDownload {
+  display: inline-block;
+  margin-top: 6px;
+  border: 1px solid var(--black-color);
+  border-radius: 10px;
+  padding: 3px 10px;
+  font-size: var(--font-meta);
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+}
+
+.trailTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.trailTag {
+  border: 1px solid var(--hover-color);
+  border-radius: 10px;
+  padding: 2px 8px;
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+}
+
+/* Transient, so it reads over the panels it may pop out behind */
+.maplibregl-popup {
+  z-index: var(--z-popup);
 }

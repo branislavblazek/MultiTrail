@@ -7,10 +7,22 @@ import {
   updateSimplifiedData,
   hasSimplifiedLayer,
 } from "./map.js";
-import { estimateGPXFilesize, parseTrack, trackStats } from "./geo-utils.js";
-import { toggleGraph, hideGraph } from "./graph.js";
-import { prepare, applyTolerance, DEFAULT_TOLERANCE } from "./simplify.js";
+import {
+  estimateGPXFilesize,
+  isLoop,
+  parseTrack,
+  trackStats,
+} from "./geo-utils.js";
+import { isAuthor } from "./author.js";
+import { toggleLayerDetail, hideLayerDetail } from "./layer-detail.js";
+import {
+  prepare,
+  applyTolerance,
+  reduceAt,
+  DEFAULT_TOLERANCE,
+} from "./simplify.js";
 import { coordsToGpx, simplifiedName, saveGpx } from "./gpx-export.js";
+import { slugify, featureBlock, copyText } from "./publish.js";
 
 const PALETTE = [
   "#ef4444",
@@ -81,18 +93,23 @@ export function pushLayer(map, filename, content) {
  * @returns layer state, or null when there is no LineString to show
  */
 function createState(filename, geoJson) {
-  const feature = geoJson.features?.find(
+  const lines = (geoJson.features ?? []).filter(
     (f) => f.geometry?.type === "LineString",
   );
+  const feature = lines[0];
   if (!feature) return null;
 
   const coords = feature.geometry.coordinates;
   const pointCount = coords.length;
+  const name = feature.properties?.name || filename;
 
   return {
     id: "layer-" + self.crypto.randomUUID(),
     filename,
-    name: feature.properties?.name || filename,
+    name,
+    slug: slugify(name),
+    // All of them get drawn, but only the first one is measured
+    trackCount: lines.length,
     geoJson,
     pointCount,
     aproxSize: estimateGPXFilesize(pointCount),
@@ -115,7 +132,7 @@ function createState(filename, geoJson) {
  * @param {HTMLElement} item panel entry of the layer
  */
 function dropLayer(map, state, item) {
-  hideGraph(state.id); // Only closes when this layer is the one being graphed
+  hideLayerDetail(state.id); // Only closes when this layer is the one being graphed
   removeTrackLayer(map, state);
   layers.delete(state.id);
   item.remove();
@@ -163,10 +180,21 @@ function createLayerItem(map, state) {
   name.textContent = state.name;
   name.title = state.filename;
 
+  const warning = element("span", "layerWarning");
+  if (state.trackCount > 1) {
+    warning.textContent = "⚠️";
+    warning.title =
+      `${state.trackCount} tracks in this file. All of them are drawn, ` +
+      `but every number and the publish block come from the first one only.`;
+    console.warn(
+      `${state.filename}: ${state.trackCount} LineStrings, measuring the first`,
+    );
+  }
+
   const info = element("button", "layerInfo");
   info.textContent = "ℹ️";
   info.title = "Show track details";
-  info.addEventListener("click", () => toggleGraph(state, info));
+  info.addEventListener("click", () => toggleLayerDetail(state, info));
 
   const style = element("button", "layerStyle");
   style.textContent = "🎨";
@@ -246,17 +274,117 @@ function createLayerItem(map, state) {
       applyTolerance(state, Number(tolerance.input.value));
       updateSimplifiedData(map, state);
       simplifyMeta.textContent = formatSimplified(state);
+      publishing?.describe(); // Publish follows this slider, so keep it honest
     });
   });
+
+  // Publishing is an authoring job, the rest of the panel is for everyone
+  const publishing = isAuthor() ? createPublishing(state, tolerance.input) : null;
 
   styleFold.inner.append(createRow("Color", color), width.row, opacity.row);
   simplifyFold.inner.append(simplifyMeta, tolerance.row, save);
 
-  head.append(dot, name);
+  head.append(dot, name, warning);
   actions.append(info, style, simplify, zoom, remove);
   item.append(head, actions, styleFold.rows, simplifyFold.rows);
 
+  if (publishing) {
+    actions.insertBefore(publishing.button, zoom);
+    item.append(publishing.rows);
+  }
+
   return item;
+}
+
+/**
+ * Builds the publishing fold: the slug, what the two outputs will hold, and
+ * the button that writes them. Author only, so it is not built otherwise.
+ * @param {*} state layer state
+ * @param {HTMLInputElement} toleranceInput the simplify slider to follow
+ * @returns {{ button: HTMLElement, rows: HTMLElement, describe: Function }}
+ */
+function createPublishing(state, toleranceInput) {
+  const button = element("button", "layerPublish");
+  button.textContent = "📤";
+  button.title = "Publish as a recommended trail";
+
+  const fold = createFoldout(button, (open) => {
+    if (open) describe();
+  });
+
+  const slug = element("input", "layerSlugInput");
+  slug.value = state.slug;
+  slug.spellcheck = false;
+  slug.title = "Filename, map id and url of the published trail";
+  slug.addEventListener("input", () => {
+    state.slug = slug.value;
+  });
+  slug.addEventListener("blur", () => {
+    state.slug = slugify(slug.value);
+    slug.value = state.slug;
+    describe();
+  });
+
+  const meta = element("span", "layerMeta");
+  const status = element("span", "layerMeta");
+
+  const block = element("textarea", "layerBlock");
+  block.readOnly = true;
+  block.rows = 4;
+  block.hidden = true;
+
+  /** Both outputs come from one prepared simplification, at two tolerances. */
+  const reductions = () => {
+    if (!state.simplify) prepare(state);
+
+    const meters = Number(toleranceInput.value);
+
+    return {
+      meters,
+      original: reduceAt(state.simplify, 0),
+      reduced: reduceAt(state.simplify, meters),
+    };
+  };
+
+  const describe = () => {
+    const { meters, original, reduced } = reductions();
+    const count = (value) => value.toLocaleString("sk-SK");
+
+    meta.textContent =
+      `${state.slug}.gpx: ${count(original.pointCount)} pts · ` +
+      `block: ${meters} m, ${count(reduced.pointCount)} pts`;
+  };
+
+  const save = element("button", "layerSave");
+  save.textContent = "⬇ Publish";
+  save.addEventListener("click", async () => {
+    const { original, reduced } = reductions();
+
+    saveGpx(`${state.slug}.gpx`, coordsToGpx(original.coords, state.name));
+
+    // Numbers describe the file that was saved, not the raw import
+    const text = featureBlock({
+      slug: state.slug,
+      name: state.name,
+      coords: reduced.coords,
+      stats: trackStats(original.coords),
+      loop: isLoop(original.coords),
+    });
+
+    const copied = await copyText(text);
+
+    block.hidden = copied;
+    block.value = copied ? "" : text;
+
+    status.textContent =
+      `Saved ${state.slug}.gpx · ` +
+      (copied ? "feature block copied" : "copy the block below") +
+      (state.trackCount > 1 ? ` · first of ${state.trackCount} tracks` : "");
+  });
+
+  fold.inner.append(createRow("Slug", slug), meta, save, block, status);
+
+  return { button, rows: fold.rows, describe };
 }
 
 /**

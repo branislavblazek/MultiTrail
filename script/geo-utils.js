@@ -164,6 +164,18 @@ export function elevationProfile(coords) {
 }
 
 /**
+ * Whether a track ends roughly where it started.
+ * @param {[number, number, number?][]} coords
+ * @param {number} tolerance meters the two ends may be apart
+ * @returns {boolean}
+ */
+export function isLoop(coords, tolerance = 150) {
+  if (coords.length < 3) return false;
+
+  return haversine(coords[0], coords[coords.length - 1]) <= tolerance;
+}
+
+/**
  * Great-circle distance between two points.
  * @param {[number, number]} from [lng, lat]
  * @param {[number, number]} to [lng, lat]

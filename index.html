@@ -16,46 +16,56 @@
   </head>
   <body>
     <div id="map"></div>
+    <button id="trailButton">🧭</button>
+    <div id="trailPanel" class="active">
+      <div id="trailHead">
+        <span id="trailTitle">Trails</span>
+        <span id="trailCount"></span>
+        <button id="trailClose" title="Close panel">✕</button>
+      </div>
+      <div id="trailFilter"></div>
+      <div id="trailList"></div>
+    </div>
     <button id="layerButton">🛠️</button>
-    <div id="layerPanel" class="active">
+    <div id="layerPanel">
       <span id="layerHint"
         >Create a layer by submitting a file (.gpx, .json, .geojson).</span
       >
       <input type="file" id="layerFile" accept=".gpx,.json,.geojson" />
       <div id="layerList"></div>
     </div>
-    <div id="graphPanel">
-      <div id="graphHead">
-        <span id="graphTitle"></span>
-        <button id="graphClose" title="Close details">✕</button>
+    <div id="detailPanel">
+      <div id="detailHead">
+        <span id="detailTitle"></span>
+        <button id="detailClose" title="Close details">✕</button>
       </div>
-      <div id="graphStats"></div>
-      <div id="graphBody"></div>
+      <div id="detailMeta"></div>
+      <div id="detailBody"></div>
     </div>
     <script type="module">
       import { createMap } from "./script/map.js";
-      import {
-        initLayerPanel,
-        initFileInput,
-        pushLayer,
-      } from "./script/layer.js";
-      import { initGraphPanel } from "./script/graph.js";
+      import { initLayerPanel, initFileInput } from "./script/layer.js";
+      import { initDetailPanel } from "./script/detail-panel.js";
+      import { initLayerDetail } from "./script/layer-detail.js";
+      import { isAuthor, removeAuthorOnly } from "./script/author.js";
+      import { loadTrails } from "./script/trails.js";
+      import { initTrailPanel } from "./script/trail-panel.js";
 
-      const DEFAULT_TRACK = "./data/demo.geojson";
+      const TRAILS = "./data/trails.geojson";
 
       const map = await createMap("map");
 
+      if (!isAuthor()) removeAuthorOnly();
+
       initLayerPanel();
       initFileInput(map);
-      initGraphPanel(map);
+      initDetailPanel();
+      initLayerDetail(map);
 
       try {
-        const response = await fetch(DEFAULT_TRACK);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        pushLayer(map, DEFAULT_TRACK, await response.text());
+        initTrailPanel(map, await loadTrails(map, TRAILS));
       } catch (err) {
-        console.error(`Could not load ${DEFAULT_TRACK}:`, err);
+        console.error(`Could not load ${TRAILS}:`, err);
       }
     </script>
   </body>
