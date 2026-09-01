@@ -70,7 +70,7 @@ export function initFileInput(map) {
  * @param {string} content GeoJson/GPX file content
  * @returns layer state, or null when the file holds no track
  */
-export function pushLayer(map, filename, content) {
+function pushLayer(map, filename, content) {
   const state = createState(filename, parseTrack(filename, content));
   if (!state) {
     console.warn(`No LineString found in ${filename}`);

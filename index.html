@@ -47,15 +47,12 @@
       import { initLayerPanel, initFileInput } from "./script/layer.js";
       import { initDetailPanel } from "./script/detail-panel.js";
       import { initLayerDetail } from "./script/layer-detail.js";
-      import { isAuthor, removeAuthorOnly } from "./script/author.js";
       import { loadTrails } from "./script/trails.js";
       import { initTrailPanel } from "./script/trail-panel.js";
 
       const TRAILS = "./data/trails.geojson";
 
       const map = await createMap("map");
-
-      if (!isAuthor()) removeAuthorOnly();
 
       initLayerPanel();
       initFileInput(map);
