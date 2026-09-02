@@ -14,6 +14,7 @@ import {
   openTrailDetail,
   closeTrailDetail,
 } from "./trail-detail.js";
+import { SPORTS, COUNTRIES, PLACES, shape, plural } from "./labels.js";
 
 /** Nothing filtered out. Anything equal to this stays out of the url. */
 const CLEAR = {
@@ -28,14 +29,18 @@ const CLEAR = {
   places: true,
 };
 
+/** Where the sheet may come to rest. */
+const SNAPS = ["peek", "list", "full"];
+
 const filter = { ...CLEAR };
 
 let mapRef = null;
 let trails = [];
 let controls = null;
+let matching = [];
 
 /**
- * Builds the trails panel: search, filters and the list under them.
+ * Builds the trails sheet: the handle, the summary, the filters and the list.
  * @param {*} map maplibre Map
  * @param {*[]} features everything trails.geojson holds
  */
@@ -43,16 +48,11 @@ export function initTrailPanel(map, features) {
   mapRef = map;
   trails = features;
 
-  const button = document.getElementById("trailButton");
-  const panel = document.getElementById("trailPanel");
-
-  button.addEventListener("click", () => panel.classList.toggle("active"));
-  document
-    .getElementById("trailClose")
-    .addEventListener("click", () => panel.classList.remove("active"));
+  initSheet();
+  initFilterSheet();
 
   controls = buildFilter(features);
-  document.getElementById("trailFilter").replaceChildren(...controls.rows);
+  document.getElementById("filterGrid").replaceChildren(...controls.fields);
 
   // On the map a click gives the short popup, in the list it goes straight in
   watchTrailClicks(map, (feature, lngLat) => {
@@ -67,32 +67,139 @@ export function initTrailPanel(map, features) {
 }
 
 /**
- * Opens whatever #trail= in the url points at, so a trail can be linked to.
+ * Drag and tap on the handle, moving the sheet between its three stops.
  */
-function openFromHash() {
-  const slug = new URLSearchParams(location.hash.slice(1)).get("trail");
-  const feature = slug && trailBySlug(slug);
+function initSheet() {
+  const sheet = document.getElementById("sheet");
+  const handle = document.getElementById("sheetHandle");
 
-  if (!feature) return;
+  let start = null;
 
-  pick(slug);
-  openTrailDetail(mapRef, feature);
+  const snapTo = (name) => {
+    sheet.classList.remove(...SNAPS, "dragging");
+    sheet.style.height = "";
+    sheet.classList.add(name);
+  };
+
+  // Desktop only: the chrome button folds the whole column away
+  document.getElementById("trailsButton").addEventListener("click", () => {
+    sheet.classList.toggle("closed");
+  });
+
+  handle.addEventListener("pointerdown", (evt) => {
+    start = { y: evt.clientY, height: sheet.getBoundingClientRect().height };
+    handle.setPointerCapture(evt.pointerId);
+    sheet.classList.add("dragging");
+  });
+
+  handle.addEventListener("pointermove", (evt) => {
+    if (!start) return;
+
+    // Dragging up grows the sheet, so the delta is inverted
+    const height = start.height - (evt.clientY - start.y);
+    sheet.style.height = `${Math.max(80, Math.min(height, innerHeight * 0.95))}px`;
+  });
+
+  handle.addEventListener("pointerup", (evt) => {
+    if (!start) return;
+
+    const moved = Math.abs(evt.clientY - start.y);
+    const height = sheet.getBoundingClientRect().height;
+
+    start = null;
+
+    // A tap cycles, a drag lands on whichever stop ended up closest
+    snapTo(moved < 8 ? next(sheet) : nearest(height));
+  });
+
+  sheet.dataset.snap = "peek";
+}
+
+/**
+ * The stop after the one the sheet is at, wrapping around.
+ * @param {HTMLElement} sheet
+ * @returns {string} snap name
+ */
+function next(sheet) {
+  const at = SNAPS.findIndex((name) => sheet.classList.contains(name));
+
+  return SNAPS[(at + 1) % SNAPS.length];
+}
+
+/**
+ * The stop closest to a height the finger left the sheet at.
+ * @param {number} height pixels
+ * @returns {string} snap name
+ */
+function nearest(height) {
+  const share = height / innerHeight;
+
+  if (share < 0.3) return "peek";
+
+  return share < 0.75 ? "list" : "full";
+}
+
+/**
+ * Opens and closes the filter overlay.
+ */
+function initFilterSheet() {
+  const sheet = document.getElementById("sheet");
+  const panel = document.getElementById("filterSheet");
+
+  const list = document.getElementById("trailList");
+  const summary = document.getElementById("sheetSummary");
+
+  const open = (visible) => {
+    panel.hidden = !visible;
+    list.hidden = visible;
+    summary.hidden = visible;
+
+    if (!visible) return;
+
+    // Filters need room, so opening them pulls the sheet all the way up
+    sheet.classList.remove(...SNAPS);
+    sheet.style.height = "";
+    sheet.classList.add("full");
+  };
+
+  open(false); // Not left to the hidden attribute surviving in the markup
+
+  document
+    .getElementById("filterButton")
+    .addEventListener("click", () => open(panel.hidden));
+
+  for (const id of ["filterClose", "filterApply"]) {
+    document.getElementById(id).addEventListener("click", () => open(false));
+  }
+
+  for (const id of ["resetButton", "filterReset"]) {
+    document.getElementById(id).addEventListener("click", () => {
+      Object.assign(filter, { ...CLEAR, tags: [] });
+      controls.write(filter);
+      apply();
+    });
+  }
 }
 
 /**
  * Runs the filter, feeds both the map and the list, and records it in the url.
  */
 function apply() {
-  const matched = trails.filter((feature) => matches(feature.properties));
+  matching = trails.filter((feature) => matches(feature.properties));
 
-  showTrails(mapRef, matched);
-  renderList(matched);
+  showTrails(mapRef, matching);
+  renderList(matching);
   writeHash();
 
   document.getElementById("trailCount").textContent =
-    matched.length === trails.length
+    matching.length === trails.length
       ? `${trails.length}`
-      : `${matched.length} / ${trails.length}`;
+      : `${matching.length} / ${trails.length}`;
+
+  document.getElementById("filterApply").textContent =
+    matching.length === 0
+      ? "Žiadne výsledky"
+      : `Zobraziť ${matching.length} ${plural(matching.length, "výsledok", "výsledky", "výsledkov")}`;
 }
 
 /**
@@ -116,7 +223,11 @@ function matches(properties) {
     : shortestDuration(properties);
 
   return (
-    within(properties.distance_m / 1000, filter.distanceMin, filter.distanceMax) &&
+    within(
+      properties.distance_m / 1000,
+      filter.distanceMin,
+      filter.distanceMax,
+    ) &&
     within(properties.ascent_m, "", filter.ascentMax) &&
     within(duration, "", filter.durationMax)
   );
@@ -182,49 +293,46 @@ function shortestDuration(properties) {
 /**
  * Builds every filter control out of what the data actually contains.
  * @param {*[]} features
- * @returns {{ rows: HTMLElement[], write: (filter: *) => void }}
+ * @returns {{ fields: HTMLElement[], write: (filter: *) => void }}
  */
 function buildFilter(features) {
-  const query = input("search", "Search name, region, tag");
-  query.addEventListener("input", () => {
-    filter.query = query.value.trim();
-    apply();
-  });
-
-  const sport = select([["", "Any sport"], ...sportOptions(features)]);
-  sport.addEventListener("change", () => {
-    filter.sport = sport.value;
-    apply();
-  });
-
-  const country = select([
-    ["", "Anywhere"],
-    ...valuesOf(features, "country").map((code) => [code, code]),
+  const query = input("search", "Názov, región alebo tag");
+  const sport = select([
+    ["", "Všetky športy"],
+    ...valuesIn(features, "sports")
+      .map((key) => [key, SPORTS[key] ?? key])
+      .sort(([, a], [, b]) => a.localeCompare(b, "sk")),
   ]);
-  country.addEventListener("change", () => {
-    filter.country = country.value;
-    apply();
-  });
+  const country = select([
+    ["", "Kdekoľvek"],
+    ...valuesOf(features, "country").map((code) => [
+      code,
+      COUNTRIES[code] ?? code,
+    ]),
+  ]);
 
-  const distanceMin = number("min");
-  const distanceMax = number("max");
-  const ascentMax = number("max");
-  const durationMax = number("max");
+  const distanceMin = number("km");
+  const distanceMax = number("km");
+  const ascentMax = number("m");
+  const durationMax = number("min");
 
-  const bind = (element, key) =>
-    element.addEventListener("input", () => {
-      filter[key] = element.value;
+  const bind = (element, key, event) =>
+    element.addEventListener(event, () => {
+      filter[key] = element.value.trim?.() ?? element.value;
       apply();
     });
 
-  bind(distanceMin, "distanceMin");
-  bind(distanceMax, "distanceMax");
-  bind(ascentMax, "ascentMax");
-  bind(durationMax, "durationMax");
+  bind(query, "query", "input");
+  bind(sport, "sport", "change");
+  bind(country, "country", "change");
+  bind(distanceMin, "distanceMin", "input");
+  bind(distanceMax, "distanceMax", "input");
+  bind(ascentMax, "ascentMax", "input");
+  bind(durationMax, "durationMax", "input");
 
   const places = document.createElement("input");
   places.type = "checkbox";
-  places.className = "trailCheck";
+  places.className = "filterToggle";
   places.checked = CLEAR.places;
   places.addEventListener("change", () => {
     filter.places = places.checked;
@@ -233,7 +341,7 @@ function buildFilter(features) {
 
   const chips = valuesOf(features, "tags").map((tag) => {
     const chip = document.createElement("button");
-    chip.className = "trailChip";
+    chip.className = "filterChip";
     chip.textContent = tag;
     chip.addEventListener("click", () => {
       const on = chip.classList.toggle("on");
@@ -248,18 +356,9 @@ function buildFilter(features) {
     return chip;
   });
 
-  const tagRow = document.createElement("div");
-  tagRow.className = "trailChips";
-  tagRow.append(...chips);
-
-  const reset = document.createElement("button");
-  reset.className = "trailReset";
-  reset.textContent = "Reset filters";
-  reset.addEventListener("click", () => {
-    Object.assign(filter, { ...CLEAR, tags: [] });
-    write(filter);
-    apply();
-  });
+  const chipRow = document.createElement("div");
+  chipRow.className = "filterChips";
+  chipRow.append(...chips);
 
   const write = (values) => {
     query.value = values.query;
@@ -277,23 +376,23 @@ function buildFilter(features) {
   };
 
   return {
-    rows: [
-      query,
-      row("Sport", sport),
-      row("Distance", distanceMin, unit("–"), distanceMax, unit("km")),
-      row("Ascent", ascentMax, unit("m")),
-      row("Time", durationMax, unit("min")),
-      row("Country", country),
-      row("Places", places),
-      ...(chips.length ? [tagRow] : []),
-      reset,
+    fields: [
+      field("Hľadať", query, true),
+      field("Šport", sport),
+      field("Krajina", country),
+      field("Vzdialenosť od", distanceMin),
+      field("do", distanceMax),
+      field("Max. stúpanie", ascentMax),
+      field("Max. čas", durationMax),
+      toggleRow("Zobraziť miesta", places),
+      ...(chips.length ? [chipRow] : []),
     ],
     write,
   };
 }
 
 /**
- * Draws the list under the filter.
+ * Draws the list under the summary.
  * @param {*[]} matched
  */
 function renderList(matched) {
@@ -302,62 +401,88 @@ function renderList(matched) {
   if (!matched.length) {
     const empty = document.createElement("p");
     empty.className = "trailEmpty";
-    empty.textContent = "Nothing matches this filter.";
+    empty.textContent = "Nič nevyhovuje tomuto filtru.";
     list.replaceChildren(empty);
     return;
   }
 
   list.replaceChildren(...matched.map(listItem));
-
-  function listItem(feature) {
-    const { slug, name } = feature.properties;
-
-    const item = document.createElement("button");
-    item.className = "trailItem";
-    item.dataset.slug = slug;
-    item.classList.toggle("picked", slug === selectedTrail());
-
-    const title = document.createElement("span");
-    title.className = "trailItemName";
-    title.textContent = name;
-
-    const meta = document.createElement("span");
-    meta.className = "trailItemMeta";
-    meta.textContent = describe(feature.properties);
-
-    item.append(title, meta);
-    item.addEventListener("click", () => {
-      if (pick(slug)) openTrailDetail(mapRef, feature);
-    });
-    item.addEventListener("pointerenter", () => hoverTrail(mapRef, slug));
-    item.addEventListener("pointerleave", () => hoverTrail(mapRef, null));
-
-    return item;
-  }
 }
 
 /**
- * The line under a name in the list.
+ * One row: the name and the headline number on top, the details under it.
+ * @param {*} feature
+ * @returns {HTMLElement}
+ */
+function listItem(feature) {
+  const properties = feature.properties;
+  const { slug, name, kind } = properties;
+  const place = kind === "place";
+
+  const item = document.createElement("button");
+  item.className = "trailItem";
+  item.dataset.slug = slug;
+  item.classList.toggle("picked", slug === selectedTrail());
+
+  item.append(
+    span("trailItemDot"),
+    span("trailItemName", name),
+    span(
+      "trailItemHeadline",
+      place
+        ? `${properties.ele_m} m`
+        : `${(properties.distance_m / 1000).toFixed(1)} km`,
+    ),
+    span("trailItemWhere", where(properties)),
+  );
+
+  if (place) {
+    item.append(span("trailItemNumbers", PLACES[properties.place] ?? ""));
+  } else {
+    item.append(
+      span(
+        "trailItemNumbers",
+        `↑ ${properties.ascent_m} m · ↓ ${properties.descent_m} m`,
+      ),
+      span("trailItemSports", sportsLine(properties)),
+    );
+  }
+
+  item.addEventListener("click", () => {
+    if (pick(slug)) openTrailDetail(mapRef, feature);
+  });
+  item.addEventListener("pointerenter", () => hoverTrail(mapRef, slug));
+  item.addEventListener("pointerleave", () => hoverTrail(mapRef, null));
+
+  return item;
+}
+
+/**
+ * "Žilina, SK · okruh"
  * @param {*} properties
  * @returns {string}
  */
-function describe(properties) {
-  if (properties.kind === "place") {
-    return [properties.place, `${properties.ele_m} m`, properties.region]
-      .filter(Boolean)
-      .join(" · ");
-  }
-
-  const sport = filter.sport || Object.keys(properties.sports ?? {})[0];
-  const minutes = properties.sports?.[sport]?.duration_min;
-
+function where(properties) {
   return [
-    `${(properties.distance_m / 1000).toFixed(1)} km`,
-    `↑ ${properties.ascent_m} m`,
-    minutes ? `${sport} ${duration(minutes)}` : sport,
-    properties.region,
+    [properties.region, properties.country].filter(Boolean).join(", "),
+    properties.kind === "place" ? null : shape(properties.loop),
   ]
     .filter(Boolean)
+    .join(" · ");
+}
+
+/**
+ * "beh 1 h 10 · turistika 3 h 15"
+ * @param {*} properties
+ * @returns {string}
+ */
+function sportsLine(properties) {
+  return Object.entries(properties.sports ?? {})
+    .map(([sport, value]) =>
+      value.duration_min
+        ? `${SPORTS[sport] ?? sport} ${duration(value.duration_min)}`
+        : (SPORTS[sport] ?? sport),
+    )
     .join(" · ");
 }
 
@@ -385,6 +510,19 @@ function pick(slug) {
   writeHash();
 
   return Boolean(next);
+}
+
+/**
+ * Opens whatever #trail= in the url points at, so a trail can be linked to.
+ */
+function openFromHash() {
+  const slug = new URLSearchParams(location.hash.slice(1)).get("trail");
+  const feature = slug && trailBySlug(slug);
+
+  if (!feature) return;
+
+  pick(slug);
+  openTrailDetail(mapRef, feature);
 }
 
 /**
@@ -454,20 +592,21 @@ function valuesOf(features, key) {
 }
 
 /**
- * Every sport mentioned in the data.
+ * Every key of an object valued property, across the data.
  * @param {*[]} features
- * @returns {[string, string][]} value and label pairs
+ * @param {string} key
+ * @returns {string[]}
  */
-function sportOptions(features) {
-  const sports = new Set();
+function valuesIn(features, key) {
+  const keys = new Set();
 
   for (const feature of features) {
-    Object.keys(feature.properties.sports ?? {}).forEach((sport) =>
-      sports.add(sport),
+    Object.keys(feature.properties[key] ?? {}).forEach((entry) =>
+      keys.add(entry),
     );
   }
 
-  return [...sports].sort().map((sport) => [sport, sport]);
+  return [...keys].sort();
 }
 
 /**
@@ -483,15 +622,37 @@ function duration(minutes) {
   return rest ? `${Math.floor(minutes / 60)} h ${rest}` : `${minutes / 60} h`;
 }
 
-function row(label, ...children) {
+function field(label, control, wide = false) {
   const element = document.createElement("div");
-  element.className = "trailRow";
+  element.className = wide ? "filterField wide" : "filterField";
+
+  const name = document.createElement("label");
+  name.className = "filterLabel";
+  name.textContent = label;
+  name.append(control);
+
+  element.append(name);
+
+  return element;
+}
+
+function toggleRow(label, control) {
+  const element = document.createElement("label");
+  element.className = "filterToggleRow";
 
   const name = document.createElement("span");
-  name.className = "trailRowLabel";
+  name.className = "filterToggleLabel";
   name.textContent = label;
 
-  element.append(name, ...children);
+  element.append(name, control);
+
+  return element;
+}
+
+function span(className, text = "") {
+  const element = document.createElement("span");
+  element.className = className;
+  element.textContent = text;
 
   return element;
 }
@@ -499,7 +660,7 @@ function row(label, ...children) {
 function input(type, placeholder) {
   const element = document.createElement("input");
   element.type = type;
-  element.className = "trailSearch";
+  element.className = "filterInput";
   element.placeholder = placeholder;
 
   return element;
@@ -508,7 +669,7 @@ function input(type, placeholder) {
 function number(placeholder) {
   const element = document.createElement("input");
   element.type = "number";
-  element.className = "trailNumber";
+  element.className = "filterInput";
   element.min = 0;
   element.placeholder = placeholder;
 
@@ -517,7 +678,7 @@ function number(placeholder) {
 
 function select(options) {
   const element = document.createElement("select");
-  element.className = "trailSelect";
+  element.className = "filterSelect";
 
   for (const [value, label] of options) {
     const option = document.createElement("option");
@@ -525,14 +686,6 @@ function select(options) {
     option.textContent = label;
     element.append(option);
   }
-
-  return element;
-}
-
-function unit(text) {
-  const element = document.createElement("span");
-  element.className = "trailUnit";
-  element.textContent = text;
 
   return element;
 }

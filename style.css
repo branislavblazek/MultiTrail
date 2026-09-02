@@ -1,31 +1,64 @@
 :root {
+  --teal-color: #0f766e;
+  --teal-soft-color: #dcebe7;
   --green-color: #56e39f;
   --black-color: #292d3c;
   --gray-color: #5c6066;
   --hover-color: #f0f1f2;
+  /* One step past hover, so a tap reads as pressed with no tap highlight */
   --press-color: #e2e4e6;
+  --line-color: #e6e8ea;
+  --shade-color: #f7f8f8;
 
   /* Every size in one place. Roles, not a scale: icons keep their size when
-     a title grows. */
+     a title grows. The visitor side runs bigger, it is read on a phone. */
+  --font-display: 22px;
+  --font-heading: 17px;
+  --font-stat: 20px;
+  --font-row: 14px;
   --font-map-button: 1rem;
-  --font-title: 13px;
   --font-icon: 13px;
-  --font-body: 12px;
-  --font-meta: 11px;
+  --font-body: 13px;
+  --font-meta: 12px;
+  --font-eyebrow: 11px;
   --font-block: 10px;
+
+  --radius-sheet: 20px;
+  --radius-card: 12px;
+  --radius-pill: 999px;
+  --shadow-float: 0 2px 12px rgb(41 45 60 / 12%);
+  --shadow-sheet: 0 -2px 24px rgb(41 45 60 / 14%);
+
+  /* Where the sheet sits in each of its three stops */
+  --sheet-peek: 132px;
+  --sheet-list: 62dvh;
+  --sheet-full: 92dvh;
 
   /* Maplibre puts every control corner at z-index 2, ours go above it.
      The popup closes when the detail opens, so those two never meet. */
-  --z-panel: 5;
-  --z-popup: 6;
-  --z-detail: 7;
+  --z-map-chrome: 5;
+  --z-panel: 6;
+  --z-popup: 7;
+  --z-detail: 8;
 }
 
+/* Inputs are content-box by default, so a padded "width: 100%" field would
+   stick out of the panel holding it and make that panel scroll sideways */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+
+  /* No grey flash on tap. Inherited, but set here so nothing can bring it
+     back on a child of its own. */
   -webkit-tap-highlight-color: transparent;
+}
+
+/* An id selector setting display outranks the browser rule for [hidden], so
+   say it once here and loudly. Without this the filter panel was never
+   hidden, it only sat below the fold of the sheet. */
+[hidden] {
+  display: none !important;
 }
 
 body {
@@ -44,22 +77,71 @@ body,
   height: 100%;
 }
 
+/* On html, not just body: with the root left visible the browser hands the
+   viewport body's value and treats body itself as visible, so body alone
+   clips nothing. */
 html,
 body {
   overflow: hidden;
 }
 
-#trailButton,
-#layerButton {
+.eyebrow {
+  color: var(--teal-color);
+  font-size: var(--font-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------- map chrome */
+
+#brand {
   position: fixed;
-  z-index: var(--z-panel);
+  z-index: var(--z-map-chrome);
   top: 12px;
-  border-radius: 12px;
-  border: none;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-card);
   background-color: white;
-  width: 32px;
-  height: 32px;
-  font-size: var(--font-map-button);
+  box-shadow: var(--shadow-float);
+  padding: 6px 12px 6px 6px;
+  font-size: var(--font-heading);
+  font-weight: 600;
+}
+
+#brandMark {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+
+#chrome {
+  position: fixed;
+  z-index: var(--z-map-chrome);
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.chromeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius-card);
+  background-color: white;
+  box-shadow: var(--shadow-float);
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  font: inherit;
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: inherit;
   cursor: pointer;
 
   &:hover {
@@ -71,54 +153,290 @@ body {
   }
 }
 
-#trailButton {
-  left: 12px;
+.chromeIcon {
+  font-size: var(--font-map-button);
 }
 
-#layerButton {
-  right: 12px;
+/* The label is the desktop half of these buttons */
+.chromeLabel {
+  display: none;
 }
 
-#trailPanel {
+/* On a phone the sheet is always there, so it needs no way in */
+#trailsButton {
+  display: none;
+}
+
+/* --------------------------------------------------------------- trail sheet */
+
+#sheet {
   position: fixed;
   z-index: var(--z-panel);
-  top: 56px;
-  left: -100%;
-  border-radius: 10px;
-  max-height: calc(100% - 120px);
-  overflow: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   background-color: white;
-  width: 300px;
-  transition: left 0.3s ease-in-out;
-  padding: 10px;
+  box-shadow: var(--shadow-sheet);
+  height: var(--sheet-peek);
+  transition: height 0.28s ease-in-out;
 
-  &.active {
-    left: 12px;
+  &.list {
+    height: var(--sheet-list);
+  }
+
+  &.full {
+    height: var(--sheet-full);
+  }
+
+  /* While a finger is on the handle the height is written inline */
+  &.dragging {
+    transition: none;
   }
 }
 
-#trailHead {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+/* The detail covers the sheet on a phone, so get it out of the way */
+body.detail-open #sheet {
+  transform: translateY(100%);
+  transition:
+    transform 0.28s ease-in-out,
+    height 0.28s ease-in-out;
 }
 
-#trailTitle {
+#sheetHandle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: none;
+  padding: 8px 0 4px;
+  cursor: grab;
+  touch-action: none;
+
+  &::before {
+    content: "";
+    border-radius: var(--radius-pill);
+    background-color: var(--press-color);
+    width: 36px;
+    height: 4px;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+#sheetHead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+#sheetTitles {
   flex: 1;
-  font-size: var(--font-title);
+  min-width: 0;
+}
+
+#sheetTitle {
+  margin: 2px 0 0;
+  font-size: var(--font-heading);
+  font-weight: 600;
+}
+
+#filterButton {
+  flex: none;
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-card);
+  background-color: white;
+  padding: 9px 14px;
+  font: inherit;
+  font-size: var(--font-meta);
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+}
+
+#sheetSummary {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 12px 16px 0;
+  border-top: 1px solid var(--line-color);
+  padding-top: 12px;
+  font-size: var(--font-meta);
+  color: var(--gray-color);
 }
 
 #trailCount {
-  color: var(--gray-color);
-  font-size: var(--font-meta);
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: var(--black-color);
   font-variant-numeric: tabular-nums;
 }
 
-#trailClose {
+#sheetSummaryLabel {
+  flex: 1;
+}
+
+.resetLink {
   border: none;
   background: none;
-  border-radius: 6px;
-  padding: 2px 4px;
+  padding: 0;
+  font: inherit;
+  font-size: var(--font-meta);
+  color: var(--teal-color);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+/* ---------------------------------------------------------------- trail list */
+
+#trailList {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 8px 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trailItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 2px 10px;
+  border: none;
+  border-radius: var(--radius-card);
+  background: none;
+  width: 100%;
+  padding: 12px 8px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--shade-color);
+  }
+
+  &:active {
+    background-color: var(--hover-color);
+  }
+
+  &.picked {
+    background-color: var(--hover-color);
+  }
+}
+
+.trailItemDot {
+  grid-row: 1;
+  align-self: center;
+  border-radius: 50%;
+  background-color: var(--teal-color);
+  width: 9px;
+  height: 9px;
+}
+
+.trailItem + .trailItem {
+  border-top: 1px solid var(--line-color);
+}
+
+.trailItemName {
+  grid-row: 1;
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: var(--teal-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trailItemHeadline {
+  grid-row: 1;
+  font-size: var(--font-row);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.trailItemWhere,
+.trailItemNumbers,
+.trailItemSports {
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+}
+
+.trailItemWhere {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+.trailItemNumbers {
+  grid-row: 2;
+  grid-column: 3;
+  font-variant-numeric: tabular-nums;
+}
+
+.trailItemSports {
+  grid-row: 3;
+  grid-column: 2 / -1;
+}
+
+.trailEmpty {
+  margin: 24px 0;
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------- filters */
+
+#filterSheet {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+  border-top: 1px solid var(--line-color);
+  background-color: var(--shade-color);
+  padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#filterHead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+#filterTitle {
+  flex: 1;
+  text-align: center;
+  font-size: var(--font-row);
+  font-weight: 600;
+}
+
+#filterClose {
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 4px 6px;
   font-size: var(--font-icon);
   line-height: 1;
   cursor: pointer;
@@ -132,78 +450,113 @@ body {
   }
 }
 
-#trailFilter {
+#filterGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.filterField {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: 8px;
-}
 
-.trailSearch,
-.trailNumber,
-.trailSelect {
-  border: 1px solid var(--hover-color);
-  border-radius: 6px;
-  padding: 3px 6px;
-  font: inherit;
-  font-size: var(--font-meta);
-  color: inherit;
-  background-color: white;
-
-  &:focus {
-    outline: none;
-    border-color: var(--gray-color);
+  &.wide {
+    grid-column: 1 / -1;
   }
 }
 
-.trailSearch {
+.filterLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-meta);
+  color: var(--gray-color);
+}
+
+.filterInput,
+.filterSelect {
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-card);
+  background-color: white;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: var(--font-row);
+  color: inherit;
   width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: var(--teal-color);
+  }
 }
 
-.trailNumber {
-  width: 52px;
-  font-variant-numeric: tabular-nums;
+.filterInput::placeholder {
+  color: var(--gray-color);
+  opacity: 0.7;
 }
 
-.trailSelect {
-  flex: 1;
-  min-width: 0;
-}
-
-.trailRow {
+.filterToggleRow {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: var(--gray-color);
-  font-size: var(--font-meta);
+  gap: 10px;
+  border-top: 1px solid var(--line-color);
+  padding-top: 14px;
+  font-size: var(--font-row);
 }
 
-.trailRowLabel {
-  width: 58px;
+.filterToggleLabel {
+  flex: 1;
+}
+
+/* A checkbox drawn as a switch, so it keeps its keyboard and label behaviour */
+.filterToggle {
+  appearance: none;
   flex: none;
+  position: relative;
+  border: none;
+  border-radius: var(--radius-pill);
+  background-color: var(--press-color);
+  width: 48px;
+  height: 28px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    border-radius: 50%;
+    background-color: white;
+    width: 22px;
+    height: 22px;
+    transition: transform 0.2s ease;
+  }
+
+  &:checked {
+    background-color: var(--teal-color);
+  }
+
+  &:checked::after {
+    transform: translateX(20px);
+  }
 }
 
-.trailUnit {
-  color: var(--gray-color);
-  font-size: var(--font-meta);
-}
-
-.trailCheck {
-  accent-color: var(--green-color);
-}
-
-.trailChips {
+.filterChips {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 2px;
+  gap: 6px;
 }
 
-.trailChip {
-  border: 1px solid var(--hover-color);
-  border-radius: 10px;
-  background: none;
-  padding: 2px 8px;
+.filterChip {
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-pill);
+  background-color: white;
+  padding: 7px 14px;
+  font: inherit;
   font-size: var(--font-meta);
   color: var(--gray-color);
   cursor: pointer;
@@ -217,150 +570,117 @@ body {
   }
 
   &.on {
-    border-color: var(--black-color);
-    color: var(--black-color);
+    border-color: var(--teal-color);
+    background-color: var(--teal-soft-color);
+    color: var(--teal-color);
   }
 }
 
-.trailReset {
-  margin-top: 2px;
+#filterApply {
+  flex: none;
+  margin-top: 16px;
   border: none;
-  background: none;
-  padding: 2px 0;
-  font-size: var(--font-meta);
-  color: var(--gray-color);
-  text-align: left;
-  cursor: pointer;
-
-  &:hover {
-    color: var(--black-color);
-  }
-
-  &:active {
-    opacity: 0.6;
-  }
-}
-
-#trailList {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 10px;
-  border-top: 1px solid var(--hover-color);
-  padding-top: 8px;
-}
-
-.trailItem {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  background: none;
-  padding: 5px 8px;
+  border-radius: var(--radius-card);
+  background-color: var(--black-color);
+  width: 100%;
+  padding: 15px;
   font: inherit;
-  color: inherit;
-  text-align: left;
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: white;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--hover-color);
-  }
-
   &:active {
-    background-color: var(--press-color);
-  }
-
-  &.picked {
-    border-color: var(--black-color);
+    opacity: 0.85;
   }
 }
 
-.trailItemName {
-  font-size: var(--font-title);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trailItemMeta {
-  color: var(--gray-color);
-  font-size: var(--font-meta);
-  font-variant-numeric: tabular-nums;
-}
-
-.trailEmpty {
-  margin: 8px 0;
-  color: var(--gray-color);
-  font-size: var(--font-meta);
-  text-align: center;
-}
+/* ------------------------------------------------------- author panel */
 
 #layerPanel {
   position: fixed;
   z-index: var(--z-panel);
   top: 56px;
-  right: -100%;
-  border-radius: 10px;
+  right: 12px;
+  border-radius: var(--radius-sheet);
   border: none;
   max-height: calc(100% - 120px);
   overflow: auto;
   background-color: white;
+  box-shadow: var(--shadow-float);
   width: 300px;
-  min-height: 200px;
-  transition: right 0.3s ease-in-out;
-  padding: 10px;
+  transform: translateX(calc(100% + 12px));
+  transition: transform 0.3s ease-in-out;
+  padding: 16px;
 
   &.active {
-    right: 12px;
+    transform: translateX(0);
+  }
+
+  #layerTitle {
+    display: block;
+    margin: 2px 0 0;
+    font-size: var(--font-heading);
+    font-weight: 600;
   }
 
   #layerHint {
-    color: var(--color-black);
+    display: block;
+    color: var(--gray-color);
     font-size: var(--font-meta);
   }
 
-  #layerFile {
-    border: 1px dashed var(--black-color);
-    border-radius: 10px;
-    padding: 4px 0 4px 0;
-    width: 100%;
-    margin-top: 6px;
+  #layerFileLabel {
+    display: block;
+    margin-top: 12px;
+    border: 1px solid var(--line-color);
+    border-radius: var(--radius-card);
+    padding: 11px 14px;
     font-size: var(--font-meta);
-
-    &::file-selector-button {
-      border: none;
-      background: none;
-      font-size: var(--font-meta);
-    }
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
 
     &:hover {
       background-color: var(--hover-color);
     }
+
+    &:active {
+      background-color: var(--press-color);
+    }
+  }
+
+  /* The label is the button, the input itself only opens the picker */
+  #layerFile {
+    display: none;
   }
 }
 
 #layerList {
-  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  margin-top: 12px;
+  border-top: 1px solid var(--line-color);
+  padding-top: 4px;
 }
 
 .layerItem {
-  border: 1px solid var(--gray-color);
-  border-radius: 10px;
-  padding: 6px 8px;
+  border-radius: var(--radius-card);
+  padding: 10px 8px;
 
   &.dimmed {
     opacity: 0.5;
   }
 }
 
+.layerItem + .layerItem {
+  border-top: 1px solid var(--line-color);
+}
+
 .layerItemHead {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 }
 
 .layerItemActions {
@@ -368,34 +688,49 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .layerName {
   flex: 1;
-  font-size: var(--font-title);
+  font-size: var(--font-row);
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Filled while the track is shown, a bare ring once it is hidden */
+/* The dot matches the one in the trails list, but it is also the visibility
+   switch, so the target around it stays finger sized. */
 .layerDot {
   flex: none;
-  width: 15px;
-  height: 15px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: none;
+  width: 26px;
+  height: 26px;
+  margin-left: -8px;
   padding: 0;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  background-color: currentColor;
+  color: inherit;
   cursor: pointer;
 
-  &.hollow {
+  &::before {
+    content: "";
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background-color: currentColor;
+    width: 11px;
+    height: 11px;
+  }
+
+  /* Filled while the track is shown, a bare ring once it is hidden */
+  &.hollow::before {
     background-color: transparent;
   }
 
-  &:active {
-    transform: scale(0.9);
+  &:active::before {
+    transform: scale(0.85);
   }
 }
 
@@ -554,18 +889,22 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* -------------------------------------------------------------- detail sheet */
+
 #detailPanel {
   position: fixed;
   z-index: var(--z-detail);
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  max-width: 900px;
-  margin: 0 auto;
-  border-radius: 10px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   background-color: white;
-  padding: 10px;
-  transform: translateY(calc(100% + 12px));
+  box-shadow: var(--shadow-sheet);
+  max-height: var(--sheet-full);
+  padding: 20px 16px 16px;
+  transform: translateY(calc(100% + 8px));
   transition: transform 0.3s ease-in-out;
 
   &.active {
@@ -574,31 +913,32 @@ body {
 }
 
 #detailHead {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 8px;
+}
+
+#detailEyebrow {
+  grid-column: 1;
 }
 
 #detailTitle {
-  flex: 1;
-  font-size: var(--font-title);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-#detailMeta {
-  margin-top: 2px;
-  color: var(--gray-color);
-  font-size: var(--font-meta);
-  font-variant-numeric: tabular-nums;
+  grid-column: 1;
+  margin: 4px 0 0;
+  font-size: var(--font-display);
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 #detailClose {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: start;
   border: none;
   background: none;
-  border-radius: 6px;
-  padding: 2px 4px;
+  border-radius: 8px;
+  padding: 4px 6px;
   font-size: var(--font-icon);
   line-height: 1;
   cursor: pointer;
@@ -612,6 +952,114 @@ body {
   }
 }
 
+#detailBody {
+  flex: 1;
+  /* A scroll container in one axis is one in both, so say no to sideways */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-top: 16px;
+  border-top: 1px solid var(--line-color);
+  padding-top: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.detailStats {
+  display: flex;
+  gap: 28px;
+}
+
+.detailStat {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailStatValue {
+  font-size: var(--font-stat);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.detailStatLabel {
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+}
+
+.detailSection {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 20px;
+  border-top: 1px solid var(--line-color);
+  padding-top: 16px;
+}
+
+.detailSectionLabel {
+  flex: 1;
+}
+
+.detailSectionAside {
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------- trail detail */
+
+.trailDescription {
+  margin: 16px 0 0;
+  border-top: 1px solid var(--line-color);
+  padding-top: 16px;
+  color: var(--gray-color);
+  font-size: var(--font-body);
+  line-height: 1.6;
+}
+
+.trailTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.trailTag {
+  border-radius: var(--radius-pill);
+  background-color: var(--teal-soft-color);
+  padding: 5px 12px;
+  color: var(--teal-color);
+  font-size: var(--font-meta);
+}
+
+.trailProfile {
+  margin-top: 12px;
+}
+
+.trailNote {
+  margin: 10px 0 0;
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+  text-align: center;
+}
+
+.trailDownload {
+  display: block;
+  margin-top: 20px;
+  border-radius: var(--radius-card);
+  background-color: var(--teal-color);
+  padding: 15px;
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+/* ---------------------------------------------------------- elevation profile */
+
 .graphChart {
   position: relative;
 }
@@ -623,18 +1071,30 @@ body {
   touch-action: none;
 }
 
-.graphGrid {
-  stroke: var(--hover-color);
+.graphArea {
+  fill: var(--teal-soft-color);
 }
 
-.graphLabel {
-  fill: var(--gray-color);
-  font-size: var(--font-meta);
+.graphLine {
+  fill: none;
+  stroke: var(--teal-color);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.graphTick {
+  fill: var(--press-color);
 }
 
 .graphCursor line {
-  stroke: var(--gray-color);
+  stroke: var(--teal-color);
   stroke-dasharray: 3 3;
+}
+
+.graphCursor circle {
+  fill: white;
+  stroke: var(--teal-color);
+  stroke-width: 2.5;
 }
 
 .graphTooltip {
@@ -642,10 +1102,10 @@ body {
   top: 0;
   transform: translateX(-50%);
   pointer-events: none;
+  border-radius: 8px;
   background-color: var(--black-color);
+  padding: 3px 8px;
   color: white;
-  border-radius: 6px;
-  padding: 2px 6px;
   font-size: var(--font-meta);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -658,11 +1118,28 @@ body {
   text-align: center;
 }
 
+/* --------------------------------------------------------------------- popup */
+
+/* Transient, so it reads over the panels it may pop out behind */
+.maplibregl-popup {
+  z-index: var(--z-popup);
+}
+
+.maplibregl-popup-content {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+  padding: 12px 14px;
+}
+
 .trailPopup {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: var(--font-title);
+  gap: 6px;
+  font-size: var(--font-row);
+}
+
+.trailPopupName {
+  font-weight: 600;
 }
 
 .trailPopupMeta {
@@ -673,75 +1150,114 @@ body {
 
 .trailPopupOpen {
   align-self: start;
-  border: 1px solid var(--black-color);
-  border-radius: 10px;
-  background: none;
-  padding: 2px 10px;
+  border: none;
+  border-radius: var(--radius-card);
+  background-color: var(--teal-color);
+  padding: 7px 16px;
   font: inherit;
   font-size: var(--font-meta);
-  color: inherit;
+  font-weight: 600;
+  color: white;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--hover-color);
-  }
-
   &:active {
-    background-color: var(--press-color);
+    opacity: 0.85;
   }
 }
 
-.trailDescription {
-  margin: 6px 0 0;
-  font-size: var(--font-body);
-  line-height: 1.5;
-}
+/* ------------------------------------------------------------------- desktop */
 
-.trailProfile {
-  margin-top: 6px;
-}
-
-.trailNote {
-  margin: 8px 0;
-  color: var(--gray-color);
-  font-size: var(--font-meta);
-}
-
-.trailDownload {
-  display: inline-block;
-  margin-top: 6px;
-  border: 1px solid var(--black-color);
-  border-radius: 10px;
-  padding: 3px 10px;
-  font-size: var(--font-meta);
-  color: inherit;
-  text-decoration: none;
-
-  &:hover {
-    background-color: var(--hover-color);
+/* Past this width the sheet stops being a sheet and docks as a column, and
+   the detail sits beside it instead of over it. */
+@media (min-width: 760px) {
+  /* The triggers gain their labels, and the trails panel gains a way back */
+  .chromeLabel {
+    display: inline;
   }
 
-  &:active {
-    background-color: var(--press-color);
+  .chromeButton {
+    padding: 0 18px;
+  }
+
+  #trailsButton {
+    display: flex;
+  }
+
+  #sheetHead {
+    padding-top: 18px;
+  }
+
+  /* Left column: the list, full height, closable from the chrome */
+  #sheet {
+    top: 84px;
+    right: auto;
+    bottom: 20px;
+    left: 20px;
+    border-radius: var(--radius-sheet);
+    width: 356px;
+    height: auto;
+
+    &.list,
+    &.full {
+      height: auto;
+    }
+  }
+
+  body.detail-open #sheet {
+    transform: none;
+  }
+
+  /* Closing wins over everything above it */
+  #sheet.closed,
+  body.detail-open #sheet.closed {
+    transform: translateX(calc(-100% - 20px));
+  }
+
+  #sheetHandle {
+    display: none;
+  }
+
+  #filterSheet {
+    border-radius: 0 0 var(--radius-sheet) var(--radius-sheet);
+  }
+
+  /* Right column, bottom half: the detail hugs its content above the edge,
+     so the author panel sits above it and the map keeps the middle. */
+  #detailPanel {
+    top: auto;
+    right: 20px;
+    bottom: 20px;
+    left: auto;
+    border-radius: var(--radius-sheet);
+    width: 356px;
+    max-height: calc(100dvh - 200px);
+    transform: translateX(calc(100% + 20px));
+
+    &.active {
+      transform: translateX(0);
+    }
+  }
+
+  /* Right column, top half */
+  #layerPanel {
+    top: 84px;
+    right: 20px;
+    width: 356px;
+    max-height: 50dvh;
+    transform: translateX(calc(100% + 20px));
+
+    &.active {
+      transform: translateX(0);
+    }
   }
 }
 
-.trailTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.trailTag {
-  border: 1px solid var(--hover-color);
-  border-radius: 10px;
-  padding: 2px 8px;
-  color: var(--gray-color);
-  font-size: var(--font-meta);
-}
-
-/* Transient, so it reads over the panels it may pop out behind */
-.maplibregl-popup {
-  z-index: var(--z-popup);
+@media (prefers-reduced-motion: reduce) {
+  #sheet,
+  #layerPanel,
+  #detailPanel,
+  .filterToggle,
+  .filterToggle::after {
+    transition: none;
+  }
 }

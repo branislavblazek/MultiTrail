@@ -1,6 +1,12 @@
 import { elevationChart } from "./elevation-chart.js";
 import { showCursor, hideCursor } from "./map.js";
-import { showDetail, hideDetail, shownDetail } from "./detail-panel.js";
+import {
+  showDetail,
+  hideDetail,
+  shownDetail,
+  createStats,
+  createSection,
+} from "./detail-panel.js";
 
 /** The map the cursor is drawn on, and the button that opened the panel. */
 let mapRef = null;
@@ -15,7 +21,7 @@ export function initLayerDetail(map) {
 }
 
 /**
- * Shows the profile of a layer in the shared panel, or closes it again.
+ * Shows the profile of a layer in the shared sheet, or closes it again.
  * @param {*} state layer state
  * @param {HTMLElement} button the details button of that layer
  */
@@ -29,19 +35,30 @@ export function toggleLayerDetail(state, button) {
 
   const chart = elevationChart({
     coords: state.coords,
-    color,
     onHover: (_index, coord) => showCursor(mapRef, coord, color),
     onLeave: () => hideCursor(mapRef),
   });
+
+  const section = createSection("Výškový profil");
+
+  if (chart) {
+    section.aside.textContent =
+      `${Math.round(chart.profile.minEle)}–` +
+      `${Math.round(chart.profile.maxEle)} m`;
+  }
 
   shownButton = button;
   button.classList.add("active");
 
   showDetail({
     id: state.id,
+    eyebrow: "Vrstva",
     title: state.name,
-    meta: describe(state.stats, chart?.profile),
-    body: [chart ? chart.element : message("This track carries no elevation data.")],
+    body: [
+      stats(state.stats),
+      section.row,
+      chart ? chart.element : message("Táto trasa nemá výškové údaje."),
+    ],
     onClose: () => {
       hideCursor(mapRef);
       shownButton?.classList.remove("active");
@@ -51,7 +68,7 @@ export function toggleLayerDetail(state, button) {
 }
 
 /**
- * Closes the panel when it is this layer that is in it.
+ * Closes the sheet when it is this layer that is in it.
  * @param {string} id layer id
  */
 export function hideLayerDetail(id) {
@@ -59,25 +76,19 @@ export function hideLayerDetail(id) {
 }
 
 /**
- * The measured numbers of a track as one line.
- * @param {*} stats distance, ascent and descent in meters
- * @param {*} profile elevation profile, or undefined without elevation
- * @returns {string}
+ * The measured numbers of a track.
+ * @param {*} trackStats distance, ascent and descent in meters
+ * @returns {HTMLElement}
  */
-function describe({ distance, ascent, descent }, profile) {
-  const parts = [`${(distance / 1000).toFixed(1)} km`];
-
-  if (ascent === null || !profile) {
-    parts.push("no elevation");
-  } else {
-    parts.push(
-      `↑ ${Math.round(ascent)} m`,
-      `↓ ${Math.round(descent)} m`,
-      `↕ ${Math.round(profile.minEle)}–${Math.round(profile.maxEle)} m`,
-    );
-  }
-
-  return parts.join(" · ");
+function stats({ distance, ascent, descent }) {
+  return createStats([
+    { value: (distance / 1000).toFixed(1), label: "km" },
+    { value: ascent === null ? "—" : String(Math.round(ascent)), label: "↑ m" },
+    {
+      value: descent === null ? "—" : String(Math.round(descent)),
+      label: "↓ m",
+    },
+  ]);
 }
 
 /**

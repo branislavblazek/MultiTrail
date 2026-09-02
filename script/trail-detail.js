@@ -1,13 +1,15 @@
 import { elevationChart } from "./elevation-chart.js";
 import { parseTrack } from "./geo-utils.js";
 import { showCursor, hideCursor, showPopup } from "./map.js";
-import { COLOR, showDetailedGeometry } from "./trails.js";
+import { showDetailedGeometry } from "./trails.js";
 import {
   showDetail,
-  updateDetail,
   hideDetail,
   shownDetail,
+  createStats,
+  createSection,
 } from "./detail-panel.js";
+import { SPORTS, PLACES, COUNTRIES, shape } from "./labels.js";
 
 /** Where the full resolution originals live, by slug. */
 const GPX = (slug) => `./data/trails/${slug}.gpx`;
@@ -30,7 +32,8 @@ export function openTrailPopup(map, feature, lngLat) {
   const content = document.createElement("div");
   content.className = "trailPopup";
 
-  const name = document.createElement("strong");
+  const name = document.createElement("span");
+  name.className = "trailPopupName";
   name.textContent = properties.name;
 
   const meta = document.createElement("span");
@@ -57,7 +60,7 @@ export function closeTrailPopup() {
 }
 
 /**
- * Opens the full detail: description, numbers, elevation profile and the
+ * Opens the full detail: numbers, description, tags, elevation profile and the
  * original file. The profile arrives late, since it is a separate fetch.
  * @param {*} map maplibre Map
  * @param {*} feature the trail to show
@@ -65,26 +68,29 @@ export function closeTrailPopup() {
 export function openTrailDetail(map, feature) {
   const properties = feature.properties;
   const { slug, kind } = properties;
+  const route = kind === "route";
 
   closeTrailPopup();
 
-  const body = [description(properties), tagList(properties.tags)].filter(
-    Boolean,
-  );
-  const profile = document.createElement("div");
+  const body = [stats(properties), description(properties)];
+  const tags = tagList(properties.tags);
+  if (tags) body.push(tags);
 
-  if (kind === "route") {
-    profile.className = "trailProfile";
-    profile.append(note("Loading profile…"));
-    body.push(profile, downloadLink(slug));
-  } else if (properties.ele_m) {
-    body.push(note(`${properties.place ?? "Place"} · ${properties.ele_m} m`));
+  const section = createSection("Výškový profil");
+  const profile = document.createElement("div");
+  profile.className = "trailProfile";
+
+  if (route) {
+    profile.append(note("Načítavam profil…"));
+    body.push(section.row, profile, downloadLink(slug));
   }
 
   showDetail({
     id: slug,
+    eyebrow: route
+      ? `Trasa · ${shape(properties.loop)}`
+      : ["Miesto", PLACES[properties.place]].filter(Boolean).join(" · "),
     title: properties.name,
-    meta: summarise(properties),
     body,
     onClose: () => {
       hideCursor(map);
@@ -92,7 +98,7 @@ export function openTrailDetail(map, feature) {
     },
   });
 
-  if (kind === "route") loadProfile(map, properties, profile);
+  if (route) loadProfile(map, properties, profile, section.aside);
 }
 
 /**
@@ -109,8 +115,9 @@ export function closeTrailDetail(slug) {
  * @param {*} map maplibre Map
  * @param {*} properties of the trail
  * @param {HTMLElement} slot where the chart goes once it is ready
+ * @param {HTMLElement} aside where the elevation range goes
  */
-async function loadProfile(map, properties, slot) {
+async function loadProfile(map, properties, slot, aside) {
   const { slug } = properties;
   const coords = await originalCoords(slug);
 
@@ -118,7 +125,7 @@ async function loadProfile(map, properties, slot) {
   if (shownDetail() !== slug) return;
 
   if (!coords) {
-    slot.replaceChildren(note("Profile is not available for this trail."));
+    slot.replaceChildren(note("Profil pre túto trasu nie je dostupný."));
     return;
   }
 
@@ -126,22 +133,23 @@ async function loadProfile(map, properties, slot) {
 
   const chart = elevationChart({
     coords,
-    color: COLOR,
-    onHover: (_index, coord) => showCursor(map, coord, COLOR),
+    onHover: (_index, coord) => showCursor(map, coord, "#0f766e"),
     onLeave: () => hideCursor(map),
   });
 
   if (!chart) {
-    slot.replaceChildren(note("This trail carries no elevation data."));
+    slot.replaceChildren(note("Táto trasa nemá výškové údaje."));
     return;
   }
 
-  slot.replaceChildren(chart.element);
-  updateDetail(slug, {
-    meta:
-      `${summarise(properties)} · ` +
-      `↕ ${Math.round(chart.profile.minEle)}–${Math.round(chart.profile.maxEle)} m`,
-  });
+  slot.replaceChildren(
+    chart.element,
+    note("Potiahnutím po profile presuniete bod na mape"),
+  );
+
+  aside.textContent =
+    `${Math.round(chart.profile.minEle)}–` +
+    `${Math.round(chart.profile.maxEle)} m`;
 }
 
 /**
@@ -174,32 +182,67 @@ async function originalCoords(slug) {
 }
 
 /**
- * The numbers of a trail as one line, the same in the popup and the panel.
+ * The three numbers a route is judged by, or the altitude of a place.
+ * @param {*} properties
+ * @returns {HTMLElement}
+ */
+function stats(properties) {
+  if (properties.kind === "place") {
+    return createStats([
+      { value: String(properties.ele_m ?? "—"), label: "m n. m." },
+    ]);
+  }
+
+  return createStats([
+    { value: (properties.distance_m / 1000).toFixed(1), label: "km" },
+    { value: String(properties.ascent_m), label: "↑ m" },
+    { value: String(properties.descent_m), label: "↓ m" },
+  ]);
+}
+
+/**
+ * The numbers of a trail as one line, for the popup.
  * @param {*} properties
  * @returns {string}
  */
 function summarise(properties) {
   if (properties.kind === "place") {
-    return [properties.place, properties.region, properties.country]
+    return [
+      PLACES[properties.place] ?? properties.place,
+      `${properties.ele_m} m`,
+      place(properties),
+    ]
       .filter(Boolean)
       .join(" · ");
   }
 
   const sports = Object.entries(properties.sports ?? {})
     .map(([sport, value]) =>
-      value.duration_min ? `${sport} ${duration(value.duration_min)}` : sport,
+      value.duration_min
+        ? `${SPORTS[sport] ?? sport} ${duration(value.duration_min)}`
+        : (SPORTS[sport] ?? sport),
     )
     .join(", ");
 
   return [
     `${(properties.distance_m / 1000).toFixed(1)} km`,
     `↑ ${properties.ascent_m} m`,
-    `↓ ${properties.descent_m} m`,
     sports,
-    [properties.region, properties.country].filter(Boolean).join(", "),
+    place(properties),
   ]
     .filter(Boolean)
     .join(" · ");
+}
+
+/**
+ * "Žilina, Slovensko"
+ * @param {*} properties
+ * @returns {string}
+ */
+function place(properties) {
+  return [properties.region, COUNTRIES[properties.country]]
+    .filter(Boolean)
+    .join(", ");
 }
 
 /**
@@ -253,7 +296,7 @@ function downloadLink(slug) {
   el.className = "trailDownload";
   el.href = GPX(slug);
   el.download = `${slug}.gpx`;
-  el.textContent = "⬇ GPX";
+  el.textContent = "Stiahnuť GPX ↓";
 
   return el;
 }

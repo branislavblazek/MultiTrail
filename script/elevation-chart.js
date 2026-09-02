@@ -3,8 +3,8 @@ import { elevationProfile } from "./geo-utils.js";
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /** Drawing area in viewBox units. The svg itself scales to its container. */
-const VIEW = { width: 1000, height: 260 };
-const PAD = { top: 14, right: 14, bottom: 24, left: 46 };
+const VIEW = { width: 1000, height: 300 };
+const PAD = { top: 14, right: 6, bottom: 26, left: 6 };
 
 const PLOT = {
   left: PAD.left,
@@ -13,23 +13,27 @@ const PLOT = {
   bottom: VIEW.height - PAD.bottom,
 };
 
-/** Steps the axes are allowed to label, so the numbers stay readable. */
-const ELE_STEPS = [10, 20, 25, 50, 100, 200, 250, 500, 1000];
+/** Distance steps the ticks are allowed to sit on, in kilometers. */
 const KM_STEPS = [0.5, 1, 2, 5, 10, 20, 50, 100];
+
+/** Headroom above and below the line, as a share of the elevation span. */
+const HEADROOM = 0.12;
 
 /**
  * Draws the elevation profile of a track. Knows nothing about panels or maps:
  * it hands back an element to place and a cursor to drive, and reports what
  * the pointer is over so the caller can follow it elsewhere.
+ *
+ * No axes on purpose: on a phone the labels were noise, and the exact numbers
+ * are a finger away in the tooltip. The caller shows the range in its header.
  * @param {*} options
  * @param {[number, number, number?][]} options.coords [[lng, lat, ele], ...]
- * @param {string} options.color line color of the track
  * @param {(index: number, coord: [number, number, number?]) => void} [options.onHover]
  * @param {() => void} [options.onLeave]
  * @returns {{ element: HTMLElement, profile: *, moveCursor: Function,
  *   clearCursor: Function }|null} null when the track carries no elevation
  */
-export function elevationChart({ coords, color, onHover, onLeave }) {
+export function elevationChart({ coords, onHover, onLeave }) {
   const profile = elevationProfile(coords);
   if (!profile) return null;
 
@@ -44,35 +48,20 @@ export function elevationChart({ coords, color, onHover, onLeave }) {
     class: "graphSvg",
   });
 
-  root.append(
-    ...elevationGrid(scale),
-    ...distanceGrid(profile.distance, scale),
-  );
-
   const line = pathOf(points, scale);
 
   root.append(
     svg("path", {
+      class: "graphArea",
       d: `${line}L${PLOT.right},${PLOT.bottom}L${PLOT.left},${PLOT.bottom}Z`,
-      fill: color,
-      "fill-opacity": 0.15,
     }),
-    svg("path", {
-      d: line,
-      fill: "none",
-      stroke: color,
-      "stroke-width": 1.6,
-      "stroke-linejoin": "round",
-    }),
+    svg("path", { class: "graphLine", d: line }),
+    ...distanceTicks(profile.distance, scale),
   );
 
   const cursor = svg("g", { class: "graphCursor" });
-  const cursorLine = svg("line", {
-    y1: PLOT.top,
-    y2: PLOT.bottom,
-    "stroke-width": 1,
-  });
-  const cursorDot = svg("circle", { r: 3.5, fill: color });
+  const cursorLine = svg("line", { y1: PLOT.top, y2: PLOT.bottom });
+  const cursorDot = svg("circle", { r: 5 });
   cursor.append(cursorLine, cursorDot);
   cursor.style.display = "none";
   root.append(cursor);
@@ -97,7 +86,14 @@ export function elevationChart({ coords, color, onHover, onLeave }) {
 
     tooltip.style.display = "";
     tooltip.textContent = `${(distance / 1000).toFixed(2)} km · ${Math.round(ele)} m`;
-    tooltip.style.left = `${(x / VIEW.width) * 100}%`;
+
+    // Centred on the cursor, but stopped at both ends: hanging out of the
+    // chart put a sideways scrollbar on the panel and clipped the label.
+    const width = root.getBoundingClientRect().width;
+    const half = (tooltip.offsetWidth || 0) / 2;
+    const centre = (x / VIEW.width) * width;
+
+    tooltip.style.left = `${Math.min(Math.max(centre, half), width - half)}px`;
   };
 
   const clearCursor = () => {
@@ -141,101 +137,59 @@ function pathOf(points, scale) {
 }
 
 /**
- * Maps meters of elevation and distance onto viewBox coordinates.
+ * Maps meters of elevation and distance onto viewBox coordinates. The line
+ * keeps a margin top and bottom, so a peak never touches the edge.
  * @param {*} profile elevation profile
  */
 function scales({ distance, minEle, maxEle }) {
-  const step = niceStep(maxEle - minEle, ELE_STEPS);
-  const low = Math.floor(minEle / step) * step;
-  const high = Math.ceil(maxEle / step) * step;
-  const span = high - low || 1;
+  const span = maxEle - minEle || 1;
+  const low = minEle - span * HEADROOM;
+  const high = maxEle + span * HEADROOM;
 
   return {
-    step,
-    low,
-    high,
     x: (d) => PLOT.left + (d / (distance || 1)) * (PLOT.right - PLOT.left),
-    y: (ele) => PLOT.bottom - ((ele - low) / span) * (PLOT.bottom - PLOT.top),
+    y: (ele) =>
+      PLOT.bottom - ((ele - low) / (high - low)) * (PLOT.bottom - PLOT.top),
     toDistance: (viewX) =>
       ((viewX - PLOT.left) / (PLOT.right - PLOT.left)) * distance,
   };
 }
 
 /**
- * Horizontal grid lines with their elevation labels.
+ * Dots along the bottom, one per round distance. They give a sense of scale
+ * without spending a line of labels on it.
+ * @param {number} distance meters
+ * @param {*} scale
  * @returns {SVGElement[]}
  */
-function elevationGrid(scale) {
-  const parts = [];
-
-  for (let ele = scale.low; ele <= scale.high; ele += scale.step) {
-    const y = scale.y(ele);
-
-    parts.push(
-      svg("line", {
-        class: "graphGrid",
-        x1: PLOT.left,
-        x2: PLOT.right,
-        y1: y,
-        y2: y,
-      }),
-    );
-
-    const label = svg("text", {
-      class: "graphLabel",
-      x: PLOT.left - 8,
-      y: y + 4,
-      "text-anchor": "end",
-    });
-    label.textContent = ele;
-    parts.push(label);
-  }
-
-  return parts;
-}
-
-/**
- * Vertical grid lines with their distance labels, in kilometers.
- * @returns {SVGElement[]}
- */
-function distanceGrid(distance, scale) {
-  const parts = [];
-  const step = niceStep(distance / 1000, KM_STEPS) * 1000;
+function distanceTicks(distance, scale) {
+  const step = niceStep(distance / 1000) * 1000;
+  const ticks = [];
 
   for (let d = 0; d <= distance; d += step) {
-    const x = scale.x(d);
-
-    parts.push(
-      svg("line", {
-        class: "graphGrid",
-        x1: x,
-        x2: x,
-        y1: PLOT.top,
-        y2: PLOT.bottom,
+    ticks.push(
+      svg("circle", {
+        class: "graphTick",
+        cx: scale.x(d),
+        cy: PLOT.bottom + 14,
+        r: 4,
       }),
     );
-
-    const label = svg("text", {
-      class: "graphLabel",
-      x,
-      y: PLOT.bottom + 16,
-      "text-anchor": "middle",
-    });
-    label.textContent = `${+(d / 1000).toFixed(1)} km`;
-    parts.push(label);
   }
 
-  return parts;
+  return ticks;
 }
 
 /**
- * Smallest allowed step that keeps the axis under six lines.
- * @param {number} range span the axis has to cover
- * @param {number[]} steps allowed steps, ascending
- * @returns {number} step
+ * Smallest allowed step that keeps the ticks to a handful.
+ * @param {number} kilometers span to cover
+ * @returns {number} step in kilometers
  */
-function niceStep(range, steps) {
-  return steps.find((step) => range / step <= 5) ?? steps[steps.length - 1];
+function niceStep(kilometers) {
+  return (
+    KM_STEPS.find((step) => kilometers / step <= 6) ??
+    KM_STEPS[KM_STEPS.length - 1]
+  );
 }
 
 /**
