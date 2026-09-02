@@ -26,7 +26,12 @@ export function initDetailPanel() {
  * @param {() => void} [detail.onClose]
  */
 export function showDetail({ id, eyebrow, title, body, onClose }) {
-  shown?.onClose?.();
+  // Detached before the callback runs: an onClose that closes this panel
+  // again would otherwise loop on itself
+  const previous = shown;
+  shown = null;
+  previous?.onClose?.();
+
   shown = { id, onClose };
 
   document.getElementById("detailEyebrow").textContent = eyebrow;
@@ -45,8 +50,9 @@ export function showDetail({ id, eyebrow, title, body, onClose }) {
 export function hideDetail(id) {
   if (!shown || (id !== undefined && id !== shown.id)) return;
 
-  shown.onClose?.();
+  const closing = shown;
   shown = null;
+  closing.onClose?.();
 
   document.getElementById("detailPanel").classList.remove("active");
   document.body.classList.remove("detail-open");

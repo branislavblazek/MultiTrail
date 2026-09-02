@@ -26,13 +26,13 @@
     </div>
 
     <div id="chrome">
-      <button id="trailsButton" class="chromeButton">
-        <span class="chromeIcon">🧭</span>
-        <span class="chromeLabel">Hľadať trasy</span>
+      <button id="trailsButton" class="chromeButton" title="Filter">
+        <span class="chromeIcon">🔎</span>
+        <span class="chromeLabel">Filter</span>
       </button>
-      <button id="layerButton" class="chromeButton">
-        <span class="chromeIcon">🛠️</span>
-        <span class="chromeLabel">Autorské nástroje</span>
+      <button id="layerButton" class="chromeButton" title="Moje trasy">
+        <span class="chromeIcon">📂</span>
+        <span class="chromeLabel">Moje trasy</span>
       </button>
     </div>
 
@@ -67,9 +67,11 @@
     </section>
 
     <div id="layerPanel">
-      <span class="eyebrow">Author mode</span>
-      <h2 id="layerTitle">Publikovať trasu</h2>
-      <span id="layerHint">Načítať GPX · zjednodušiť · nastaviť štýl</span>
+      <span class="eyebrow">MultiTrail</span>
+      <h2 id="layerTitle">Moje trasy</h2>
+      <span id="layerHint"
+        >Nahraj GPX a porovnaj ho s odporúčanými trasami</span
+      >
       <label id="layerFileLabel">
         Vybrať GPX súbor
         <input type="file" id="layerFile" accept=".gpx,.json,.geojson" />

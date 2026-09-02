@@ -20,6 +20,19 @@ const cache = new Map();
 /** Only one popup is ever open. */
 let popup = null;
 
+/** What to tell the panel when the reader closes a detail. */
+let dismissed = null;
+
+/**
+ * Registers what happens when a trail detail is closed. The panel lets go of
+ * the trail then, so a closed detail never leaves a trail selected with
+ * nothing to show for it.
+ * @param {() => void} handler
+ */
+export function onTrailDetailClosed(handler) {
+  dismissed = handler;
+}
+
 /**
  * Opens the short popup on the map: the name, the numbers, and a way in.
  * @param {*} map maplibre Map
@@ -95,6 +108,7 @@ export function openTrailDetail(map, feature) {
     onClose: () => {
       hideCursor(map);
       showDetailedGeometry(map, null);
+      dismissed?.();
     },
   });
 

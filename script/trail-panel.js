@@ -13,6 +13,7 @@ import {
   closeTrailPopup,
   openTrailDetail,
   closeTrailDetail,
+  onTrailDetailClosed,
 } from "./trail-detail.js";
 import { SPORTS, COUNTRIES, PLACES, shape, plural } from "./labels.js";
 
@@ -50,6 +51,8 @@ export function initTrailPanel(map, features) {
 
   initSheet();
   initFilterSheet();
+
+  onTrailDetailClosed(() => pick(null));
 
   controls = buildFilter(features);
   document.getElementById("filterGrid").replaceChildren(...controls.fields);
