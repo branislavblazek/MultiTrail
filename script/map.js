@@ -44,25 +44,6 @@ export async function createMap(container) {
 }
 
 /**
- * Opens a popup with content built elsewhere. The only place that touches
- * maplibre directly, so nothing else has to import it.
- * @param {*} map maplibre Map
- * @param {*} lngLat where to anchor it
- * @param {HTMLElement} content
- * @returns {*} the popup, to remove later
- */
-export function showPopup(map, lngLat, content) {
-  return new maplibregl.Popup({
-    closeButton: false,
-    offset: 12,
-    maxWidth: "260px",
-  })
-    .setLngLat(lngLat)
-    .setDOMContent(content)
-    .addTo(map);
-}
-
-/**
  * Adds the empty layer that later marks the graph cursor.
  * @param {*} map maplibre Map
  */

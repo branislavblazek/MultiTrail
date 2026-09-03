@@ -34,11 +34,9 @@
   --sheet-list: 62dvh;
   --sheet-full: 92dvh;
 
-  /* Maplibre puts every control corner at z-index 2, ours go above it.
-     The popup closes when the detail opens, so those two never meet. */
+  /* Maplibre puts every control corner at z-index 2, ours go above them. */
   --z-map-chrome: 5;
   --z-panel: 6;
-  --z-popup: 7;
   --z-detail: 8;
 }
 
@@ -1118,57 +1116,6 @@ body.detail-open #sheet {
   text-align: center;
 }
 
-/* --------------------------------------------------------------------- popup */
-
-/* Transient, so it reads over the panels it may pop out behind */
-.maplibregl-popup {
-  z-index: var(--z-popup);
-}
-
-.maplibregl-popup-content {
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-float);
-  padding: 12px 14px;
-}
-
-.trailPopup {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: var(--font-row);
-}
-
-.trailPopupName {
-  font-weight: 600;
-}
-
-.trailPopupMeta {
-  color: var(--gray-color);
-  font-size: var(--font-meta);
-  font-variant-numeric: tabular-nums;
-}
-
-.trailPopupOpen {
-  align-self: start;
-  border: none;
-  border-radius: var(--radius-card);
-  background-color: var(--teal-color);
-  padding: 7px 16px;
-  font: inherit;
-  font-size: var(--font-meta);
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-
-  &:active {
-    opacity: 0.85;
-  }
-}
-
-/* ------------------------------------------------------------------- desktop */
-
-/* Past this width the sheet stops being a sheet and docks as a column, and
-   the detail sits beside it instead of over it. */
 @media (min-width: 760px) {
   /* The triggers gain their labels, and the trails panel gains a way back */
   .chromeLabel {

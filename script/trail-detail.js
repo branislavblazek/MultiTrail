@@ -1,6 +1,6 @@
 import { elevationChart } from "./elevation-chart.js";
 import { parseTrack } from "./geo-utils.js";
-import { showCursor, hideCursor, showPopup } from "./map.js";
+import { showCursor, hideCursor } from "./map.js";
 import { showDetailedGeometry } from "./trails.js";
 import {
   showDetail,
@@ -9,16 +9,13 @@ import {
   createStats,
   createSection,
 } from "./detail-panel.js";
-import { SPORTS, PLACES, COUNTRIES, shape } from "./labels.js";
+import { PLACES, shape } from "./labels.js";
 
 /** Where the full resolution originals live, by slug. */
 const GPX = (slug) => `./data/trails/${slug}.gpx`;
 
 /** Parsed originals, so reopening a trail costs nothing. */
 const cache = new Map();
-
-/** Only one popup is ever open. */
-let popup = null;
 
 /** What to tell the panel when the reader closes a detail. */
 let dismissed = null;
@@ -34,45 +31,6 @@ export function onTrailDetailClosed(handler) {
 }
 
 /**
- * Opens the short popup on the map: the name, the numbers, and a way in.
- * @param {*} map maplibre Map
- * @param {*} feature the trail that was clicked
- * @param {*} lngLat where to anchor the popup
- */
-export function openTrailPopup(map, feature, lngLat) {
-  const properties = feature.properties;
-
-  const content = document.createElement("div");
-  content.className = "trailPopup";
-
-  const name = document.createElement("span");
-  name.className = "trailPopupName";
-  name.textContent = properties.name;
-
-  const meta = document.createElement("span");
-  meta.className = "trailPopupMeta";
-  meta.textContent = summarise(properties);
-
-  const open = document.createElement("button");
-  open.className = "trailPopupOpen";
-  open.textContent = "Detail";
-  open.addEventListener("click", () => openTrailDetail(map, feature));
-
-  content.append(name, meta, open);
-
-  closeTrailPopup();
-  popup = showPopup(map, lngLat, content);
-}
-
-/**
- * Closes the popup, if one is open.
- */
-export function closeTrailPopup() {
-  popup?.remove();
-  popup = null;
-}
-
-/**
  * Opens the full detail: numbers, description, tags, elevation profile and the
  * original file. The profile arrives late, since it is a separate fetch.
  * @param {*} map maplibre Map
@@ -82,8 +40,6 @@ export function openTrailDetail(map, feature) {
   const properties = feature.properties;
   const { slug, kind } = properties;
   const route = kind === "route";
-
-  closeTrailPopup();
 
   const body = [stats(properties), description(properties)];
   const tags = tagList(properties.tags);
@@ -215,51 +171,6 @@ function stats(properties) {
 }
 
 /**
- * The numbers of a trail as one line, for the popup.
- * @param {*} properties
- * @returns {string}
- */
-function summarise(properties) {
-  if (properties.kind === "place") {
-    return [
-      PLACES[properties.place] ?? properties.place,
-      `${properties.ele_m} m`,
-      place(properties),
-    ]
-      .filter(Boolean)
-      .join(" · ");
-  }
-
-  const sports = Object.entries(properties.sports ?? {})
-    .map(([sport, value]) =>
-      value.duration_min
-        ? `${SPORTS[sport] ?? sport} ${duration(value.duration_min)}`
-        : (SPORTS[sport] ?? sport),
-    )
-    .join(", ");
-
-  return [
-    `${(properties.distance_m / 1000).toFixed(1)} km`,
-    `↑ ${properties.ascent_m} m`,
-    sports,
-    place(properties),
-  ]
-    .filter(Boolean)
-    .join(" · ");
-}
-
-/**
- * "Žilina, Slovensko"
- * @param {*} properties
- * @returns {string}
- */
-function place(properties) {
-  return [properties.region, COUNTRIES[properties.country]]
-    .filter(Boolean)
-    .join(", ");
-}
-
-/**
  * The authored description. Slovak for now, whatever is there as a fallback.
  * @param {*} properties
  * @returns {HTMLElement}
@@ -313,19 +224,6 @@ function downloadLink(slug) {
   el.textContent = "Stiahnuť GPX ↓";
 
   return el;
-}
-
-/**
- * Minutes as hours and minutes once it passes an hour.
- * @param {number} minutes
- * @returns {string}
- */
-function duration(minutes) {
-  if (minutes < 60) return `${minutes} min`;
-
-  const rest = minutes % 60;
-
-  return rest ? `${Math.floor(minutes / 60)} h ${rest}` : `${minutes / 60} h`;
 }
 
 /**

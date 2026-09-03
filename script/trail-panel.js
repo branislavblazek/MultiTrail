@@ -9,8 +9,6 @@ import {
 } from "./trails.js";
 import { slugify } from "./publish.js";
 import {
-  openTrailPopup,
-  closeTrailPopup,
   openTrailDetail,
   closeTrailDetail,
   onTrailDetailClosed,
@@ -57,9 +55,9 @@ export function initTrailPanel(map, features) {
   controls = buildFilter(features);
   document.getElementById("filterGrid").replaceChildren(...controls.fields);
 
-  // On the map a click gives the short popup, in the list it goes straight in
-  watchTrailClicks(map, (feature, lngLat) => {
-    if (pick(feature.properties.slug)) openTrailPopup(map, feature, lngLat);
+  // A click on the map opens the detail, the same as a tap in the list
+  watchTrailClicks(map, (feature) => {
+    if (pick(feature.properties.slug)) openTrailDetail(map, feature);
   });
 
   readHash();
@@ -499,7 +497,6 @@ function pick(slug) {
   const previous = selectedTrail();
   const next = slug === previous ? null : slug;
 
-  closeTrailPopup();
   if (previous && previous !== next) closeTrailDetail(previous);
 
   selectTrail(mapRef, next);
