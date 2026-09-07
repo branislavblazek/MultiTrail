@@ -1,13 +1,10 @@
-import { elevationChart } from "./elevation-chart.js";
 import { parseTrack } from "./geo-utils.js";
-import { showCursor, hideCursor } from "./map.js";
 import { showDetailedGeometry } from "./trails.js";
 import {
   showDetail,
   hideDetail,
   shownDetail,
   createStats,
-  createSection,
 } from "./detail-panel.js";
 import { PLACES, shape } from "./labels.js";
 
@@ -31,8 +28,8 @@ export function onTrailDetailClosed(handler) {
 }
 
 /**
- * Opens the full detail: numbers, description, tags, elevation profile and the
- * original file. The profile arrives late, since it is a separate fetch.
+ * Opens the trail card: numbers, description, tags and the way to the full
+ * page. The elevation profile lives on that page, not here.
  * @param {*} map maplibre Map
  * @param {*} feature the trail to show
  */
@@ -45,15 +42,6 @@ export function openTrailDetail(map, feature) {
   const tags = tagList(properties.tags);
   if (tags) body.push(tags);
 
-  const section = createSection("Výškový profil");
-  const profile = document.createElement("div");
-  profile.className = "trailProfile";
-
-  if (route) {
-    profile.append(note("Načítavam profil…"));
-    body.push(section.row, profile);
-  }
-
   body.push(pageLink(slug));
 
   showDetail({
@@ -64,13 +52,12 @@ export function openTrailDetail(map, feature) {
     title: properties.name,
     body,
     onClose: () => {
-      hideCursor(map);
       showDetailedGeometry(map, null);
       dismissed?.();
     },
   });
 
-  if (route) loadProfile(map, properties, profile, section.aside);
+  if (route) sharpenGeometry(map, slug);
 }
 
 /**
@@ -82,43 +69,18 @@ export function closeTrailDetail(slug) {
 }
 
 /**
- * Fetches the original track, draws its profile and puts the precise line on
- * the map in place of the simplified one.
+ * Puts the precise gpx line on the map in place of the simplified one while
+ * the card is open.
  * @param {*} map maplibre Map
- * @param {*} properties of the trail
- * @param {HTMLElement} slot where the chart goes once it is ready
- * @param {HTMLElement} aside where the elevation range goes
+ * @param {string} slug
  */
-async function loadProfile(map, properties, slot, aside) {
-  const { slug } = properties;
+async function sharpenGeometry(map, slug) {
   const coords = await originalCoords(slug);
 
   // The reader may have moved on while this was in flight
-  if (shownDetail() !== slug) return;
-
-  if (!coords) {
-    slot.replaceChildren(note("Profil pre túto trasu nie je dostupný."));
-    return;
-  }
+  if (shownDetail() !== slug || !coords) return;
 
   showDetailedGeometry(map, slug, coords);
-
-  const chart = elevationChart({
-    coords,
-    onHover: (_index, coord) => showCursor(map, coord, "#0f766e"),
-    onLeave: () => hideCursor(map),
-  });
-
-  if (!chart) {
-    slot.replaceChildren(note("Táto trasa nemá výškové údaje."));
-    return;
-  }
-
-  slot.replaceChildren(chart.element);
-
-  aside.textContent =
-    `${Math.round(chart.profile.minEle)}–` +
-    `${Math.round(chart.profile.maxEle)} m`;
 }
 
 /**
@@ -224,15 +186,3 @@ function pageLink(slug) {
   return el;
 }
 
-/**
- * A quiet line of text.
- * @param {string} text
- * @returns {HTMLElement}
- */
-function note(text) {
-  const el = document.createElement("p");
-  el.className = "trailNote";
-  el.textContent = text;
-
-  return el;
-}

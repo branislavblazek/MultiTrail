@@ -57,7 +57,10 @@ export function initTrailPanel(map, features) {
 
   // A click on the map opens the detail, the same as a tap in the list
   watchTrailClicks(map, (feature) => {
-    if (pick(feature.properties.slug)) openTrailDetail(map, feature);
+    if (pick(feature.properties.slug)) {
+      openTrailDetail(map, feature);
+      focusTrail(map, feature);
+    }
   });
 
   readHash();
@@ -450,7 +453,10 @@ function listItem(feature) {
   }
 
   item.addEventListener("click", () => {
-    if (pick(slug)) openTrailDetail(mapRef, feature);
+    if (pick(slug)) {
+      openTrailDetail(mapRef, feature);
+      focusTrail(mapRef, feature);
+    }
   });
   item.addEventListener("pointerenter", () => hoverTrail(mapRef, slug));
   item.addEventListener("pointerleave", () => hoverTrail(mapRef, null));
@@ -501,8 +507,6 @@ function pick(slug) {
 
   selectTrail(mapRef, next);
 
-  if (next) focusTrail(mapRef, trailBySlug(next));
-
   for (const item of document.querySelectorAll(".trailItem")) {
     item.classList.toggle("picked", item.dataset.slug === next);
   }
@@ -523,6 +527,7 @@ function openFromHash() {
 
   pick(slug);
   openTrailDetail(mapRef, feature);
+  focusTrail(mapRef, feature);
 }
 
 /**

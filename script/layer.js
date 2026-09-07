@@ -218,8 +218,7 @@ function createLayerItem(map, state) {
   remove.title = "Remove layer";
   remove.addEventListener("click", () => dropLayer(map, state, item));
 
-
-  const width = createSliderRow("Width", {
+  const width = createSliderRow("Hrúbka", {
     min: 1,
     max: 12,
     step: 0.5,
@@ -231,7 +230,7 @@ function createLayerItem(map, state) {
     updateTrackStyle(map, state);
   });
 
-  const opacity = createSliderRow("Opacity", {
+  const opacity = createSliderRow("Priehľadnosť", {
     min: 0,
     max: 1,
     step: 0.05,
@@ -279,9 +278,11 @@ function createLayerItem(map, state) {
   });
 
   // Publishing is an authoring job, the rest of the panel is for everyone
-  const publishing = isAuthor() ? createPublishing(state, tolerance.input) : null;
+  const publishing = isAuthor()
+    ? createPublishing(state, tolerance.input)
+    : null;
 
-  styleFold.inner.append(createRow("Color", color), width.row, opacity.row);
+  styleFold.inner.append(createRow("Farba", color), width.row, opacity.row);
   simplifyFold.inner.append(simplifyMeta, tolerance.row, save);
 
   head.append(dot, name, warning);

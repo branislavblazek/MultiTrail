@@ -200,17 +200,51 @@ export function hoverTrail(map, slug) {
 }
 
 /**
- * Moves the map onto a trail. Lines get their bounds, single points a zoom.
+ * Moves the map onto a trail, into the part of the screen the open detail
+ * card leaves visible. Call it after the card is filled, so its size is real.
  * @param {*} map maplibre Map
  * @param {*} feature
  */
 export function focusTrail(map, feature) {
+  const covered = detailCover();
+
   if (feature.geometry.type === "Point") {
-    map.flyTo({ center: feature.geometry.coordinates, zoom: 14 });
+    map.flyTo({
+      center: feature.geometry.coordinates,
+      zoom: 14,
+      // Shifts the point into the middle of what stays visible
+      offset: [-covered.right / 2, -covered.bottom / 2],
+    });
     return;
   }
 
-  fitToTrack(map, feature);
+  fitToTrack(map, feature, {
+    top: 40,
+    left: 40,
+    right: 40 + covered.right,
+    bottom: 40 + covered.bottom,
+  });
+}
+
+/**
+ * How much of the map the open detail hides: the bottom sheet on a phone,
+ * the right column on a desktop. Capped so the fit always keeps room.
+ * @returns {{ right: number, bottom: number }} pixels
+ */
+function detailCover() {
+  const panel = document.getElementById("detailPanel");
+
+  if (!panel || !document.body.classList.contains("detail-open")) {
+    return { right: 0, bottom: 0 };
+  }
+
+  const rect = panel.getBoundingClientRect();
+
+  if (window.innerWidth >= 760) {
+    return { right: Math.min(rect.width + 40, window.innerWidth * 0.5), bottom: 0 };
+  }
+
+  return { right: 0, bottom: Math.min(rect.height, window.innerHeight * 0.55) };
 }
 
 /**

@@ -214,11 +214,12 @@ export function removeTrackLayer(map, state) {
  * Zooms the map to fit a whole track.
  * @param {*} map maplibre Map
  * @param {*} geoJSONcontent GeoJson object
+ * @param {number|{top,right,bottom,left}} [padding] room to leave around it
  */
-export function fitToTrack(map, geoJSONcontent) {
+export function fitToTrack(map, geoJSONcontent, padding = 40) {
   const bounds = boundsOf(geoJSONcontent);
 
-  if (bounds) map.fitBounds(bounds, { padding: 40 });
+  if (bounds) map.fitBounds(bounds, { padding });
 }
 
 /**
