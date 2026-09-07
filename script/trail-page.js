@@ -6,6 +6,7 @@ import {
   hideCursor,
 } from "./map.js";
 import { parseTrack } from "./geo-utils.js";
+import { copyText } from "./publish.js";
 import { elevationChart } from "./elevation-chart.js";
 import { createStats, createSection } from "./detail-panel.js";
 import { COLOR } from "./trails.js";
@@ -75,6 +76,7 @@ export async function initTrailPage() {
 
   renderStrava(properties.strava_id, properties.strava_token);
   renderParking(properties.parking);
+  renderShare(properties.name);
 }
 
 /**
@@ -370,6 +372,46 @@ function renderWeather({ at, id, label }) {
     (altitude ? ` (${Math.round(altitude)} m n. m.)` : "");
 
   document.getElementById("pageWeather").hidden = false;
+}
+
+/**
+ * The native share sheet where there is one, the clipboard where there is
+ * not. Hidden only when the browser offers neither.
+ * @param {string} name of the trail, for the share payload
+ */
+function renderShare(name) {
+  if (!navigator.share && !navigator.clipboard) return;
+
+  const button = document.getElementById("pageShare");
+  button.hidden = false;
+
+  button.addEventListener("click", async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: name, url: location.href });
+      } catch {
+        // The reader closed the sheet, nothing to do
+      }
+      return;
+    }
+
+    const copied = await copyText(location.href);
+    flash(button, copied ? "Odkaz skopírovaný ✓" : "Skopíruj adresu stránky");
+  });
+}
+
+/**
+ * Shows a message on a button for a moment, then puts its label back.
+ * @param {HTMLElement} button
+ * @param {string} text
+ */
+function flash(button, text) {
+  const label = button.textContent;
+
+  button.textContent = text;
+  setTimeout(() => {
+    button.textContent = label;
+  }, 2000);
 }
 
 /**

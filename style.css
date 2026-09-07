@@ -142,8 +142,10 @@ body {
   color: inherit;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--hover-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
   }
 
   &:active {
@@ -255,8 +257,10 @@ body.detail-open #sheet {
   color: inherit;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--hover-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
   }
 
   &:active {
@@ -327,8 +331,10 @@ body.detail-open #sheet {
   text-align: left;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--shade-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--shade-color);
+    }
   }
 
   &:active {
@@ -438,8 +444,10 @@ body.detail-open #sheet {
   line-height: 1;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--hover-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
   }
 
   &:active {
@@ -558,8 +566,10 @@ body.detail-open #sheet {
   color: var(--gray-color);
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--hover-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
   }
 
   &:active {
@@ -638,8 +648,10 @@ body.detail-open #sheet {
     text-align: center;
     cursor: pointer;
 
-    &:hover {
-      background-color: var(--hover-color);
+    @media (hover: hover) {
+      &:hover {
+        background-color: var(--hover-color);
+      }
     }
 
     &:active {
@@ -785,9 +797,16 @@ body.detail-open #sheet {
   line-height: 1;
   cursor: pointer;
 
-  &:hover,
   &.active {
     background-color: var(--hover-color);
+  }
+
+  @media (hover: hover) {
+    @media (hover: hover) {
+      &:hover {
+        background-color: var(--hover-color);
+      }
+    }
   }
 
   &:active {
@@ -852,8 +871,10 @@ body.detail-open #sheet {
   color: inherit;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--hover-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
   }
 
   &:active {
@@ -940,8 +961,10 @@ body.detail-open #sheet {
   line-height: 1;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--hover-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
   }
 
   &:active {
@@ -1042,8 +1065,10 @@ body.detail-open #sheet {
   text-align: center;
   text-decoration: none;
 
-  &:hover {
-    text-decoration: underline;
+  @media (hover: hover) {
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   &:active {

@@ -24,8 +24,10 @@ body.trailPage {
   color: inherit;
   text-decoration: none;
 
-  &:hover {
-    background-color: var(--hover-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
   }
 
   &:active {
@@ -107,19 +109,26 @@ body.trailPage {
   }
 }
 
-.pageParking {
+/* The two quieter actions share one look: teal outline over white */
+.pageSecondary {
   display: block;
   border: 1px solid var(--teal-color);
   border-radius: var(--radius-card);
   padding: 14px;
   font-size: var(--font-row);
   font-weight: 600;
+  background: none;
+  font-family: inherit;
+  font-weight: 600;
   color: var(--teal-color);
   text-align: center;
   text-decoration: none;
+  cursor: pointer;
 
-  &:hover {
-    background-color: var(--teal-soft-color);
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--teal-soft-color);
+    }
   }
 
   &:active {
@@ -127,12 +136,25 @@ body.trailPage {
   }
 }
 
+/* The quieter pair sits side by side even on a phone */
+#pageActionsRow {
+  display: flex;
+  gap: 10px;
+
+  & > * {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Desktop: one row, the download twice as wide as each quiet action */
 @media (min-width: 760px) {
   #pageActions {
     flex-direction: row;
 
-    & > a {
+    & > * {
       flex: 1;
+      min-width: 0;
     }
   }
 }
