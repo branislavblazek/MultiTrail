@@ -179,7 +179,9 @@ body {
   background-color: white;
   box-shadow: var(--shadow-sheet);
   height: var(--sheet-peek);
-  transition: height 0.28s ease-in-out;
+  transition:
+    height 0.28s ease-in-out,
+    transform 0.28s ease-in-out;
 
   &.list {
     height: var(--sheet-list);
@@ -198,9 +200,6 @@ body {
 /* The detail covers the sheet on a phone, so get it out of the way */
 body.detail-open #sheet {
   transform: translateY(100%);
-  transition:
-    transform 0.28s ease-in-out,
-    height 0.28s ease-in-out;
 }
 
 #sheetHandle {
@@ -1011,6 +1010,8 @@ body.detail-open #sheet {
   color: var(--gray-color);
   font-size: var(--font-body);
   line-height: 1.6;
+  /* Authored \n in the json reads as a paragraph break */
+  white-space: pre-line;
 }
 
 .trailTags {
@@ -1030,6 +1031,24 @@ body.detail-open #sheet {
 
 .trailProfile {
   margin-top: 12px;
+}
+
+.trailPageLink {
+  display: block;
+  margin-top: 12px;
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: var(--teal-color);
+  text-align: center;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:active {
+    opacity: 0.6;
+  }
 }
 
 .trailNote {

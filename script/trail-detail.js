@@ -51,8 +51,10 @@ export function openTrailDetail(map, feature) {
 
   if (route) {
     profile.append(note("Načítavam profil…"));
-    body.push(section.row, profile, downloadLink(slug));
+    body.push(section.row, profile);
   }
+
+  body.push(pageLink(slug));
 
   showDetail({
     id: slug,
@@ -112,10 +114,7 @@ async function loadProfile(map, properties, slot, aside) {
     return;
   }
 
-  slot.replaceChildren(
-    chart.element,
-    note("Potiahnutím po profile presuniete bod na mape"),
-  );
+  slot.replaceChildren(chart.element);
 
   aside.textContent =
     `${Math.round(chart.profile.minEle)}–` +
@@ -211,17 +210,16 @@ function tagList(tags) {
 }
 
 /**
- * A link to the original file. A plain anchor, so the browser saves the
- * static file itself.
+ * The way into the full page of a trail: everything here plus the sports,
+ * the Strava activity and the weather.
  * @param {string} slug
  * @returns {HTMLElement}
  */
-function downloadLink(slug) {
+function pageLink(slug) {
   const el = document.createElement("a");
-  el.className = "trailDownload";
-  el.href = GPX(slug);
-  el.download = `${slug}.gpx`;
-  el.textContent = "Stiahnuť GPX ↓";
+  el.className = "trailPageLink";
+  el.href = `./trasa.html?t=${slug}`;
+  el.textContent = "Kompletný detail →";
 
   return el;
 }

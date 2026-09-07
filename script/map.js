@@ -12,15 +12,17 @@ const SIMPLIFIED_COLOR = "#292d3c";
 /**
  * Creates the map and waits until it is ready to take sources and layers.
  * @param {string} container id of the container element
+ * @param {*} [options] extra maplibre Map options, merged over the defaults
  * @returns Promise of a maplibre Map
  */
-export async function createMap(container) {
+export async function createMap(container, options = {}) {
   const map = new maplibregl.Map({
     container,
     style: "https://tiles.openfreemap.org/styles/bright",
     center: [18, 49],
     zoom: 8,
     attributionControl: { compact: true },
+    ...options,
   });
 
   map.addControl(

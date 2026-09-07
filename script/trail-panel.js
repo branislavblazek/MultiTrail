@@ -13,7 +13,7 @@ import {
   closeTrailDetail,
   onTrailDetailClosed,
 } from "./trail-detail.js";
-import { SPORTS, COUNTRIES, PLACES, shape, plural } from "./labels.js";
+import { SPORTS, COUNTRIES, PLACES, shape, plural, duration } from "./labels.js";
 
 /** Nothing filtered out. Anything equal to this stays out of the url. */
 const CLEAR = {
@@ -607,19 +607,6 @@ function valuesIn(features, key) {
   }
 
   return [...keys].sort();
-}
-
-/**
- * Minutes as hours and minutes once it passes an hour.
- * @param {number} minutes
- * @returns {string}
- */
-function duration(minutes) {
-  if (minutes < 60) return `${minutes} min`;
-
-  const rest = minutes % 60;
-
-  return rest ? `${Math.floor(minutes / 60)} h ${rest}` : `${minutes / 60} h`;
 }
 
 function field(label, control, wide = false) {

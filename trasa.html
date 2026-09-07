@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="sk">
+  <head>
+    <title>MultiTrail</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl@6.5.0/dist/maplibre-gl.css"
+    />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="stylesheet" href="./trail-page.css" />
+  </head>
+  <body class="trailPage">
+    <a id="pageBack" href="./">
+      <span id="pageBackArrow" aria-hidden="true">←</span>
+      <img src="./favicon.svg" alt="" width="28" height="28" />
+      Späť na mapu
+    </a>
+
+    <main id="page">
+      <header id="pageHead">
+        <span id="pageEyebrow" class="eyebrow"></span>
+        <h1 id="pageTitle"></h1>
+        <p id="pageWhere"></p>
+      </header>
+
+      <div id="pageStats"></div>
+      <div id="pageSports" hidden></div>
+
+      <p id="pageDescription" class="trailDescription" hidden></p>
+      <div id="pageTags" class="trailTags" hidden></div>
+
+      <div id="pageMap"></div>
+
+      <section id="pageProfile" hidden></section>
+
+      <div id="pageActions">
+        <a id="pageDownload" class="trailDownload" hidden>Stiahnuť GPX ↓</a>
+        <a
+          id="pageParking"
+          class="pageParking"
+          target="_blank"
+          rel="noopener"
+          hidden
+          >Parkovanie ↗</a
+        >
+      </div>
+
+      <div id="pageWidgets">
+        <section id="pageStrava" hidden>
+          <span class="eyebrow">Strava</span>
+          <div id="stravaSlot"></div>
+        </section>
+
+        <section id="pageWeather" hidden>
+          <span class="eyebrow">Počasie</span>
+          <iframe
+            id="weatherFrame"
+            title="Predpoveď počasia (meteoblue)"
+            loading="lazy"
+          ></iframe>
+          <p id="weatherNote" class="trailNote"></p>
+        </section>
+      </div>
+    </main>
+
+    <script type="module">
+      import { initTrailPage } from "./script/trail-page.js";
+
+      initTrailPage();
+    </script>
+  </body>
+</html>

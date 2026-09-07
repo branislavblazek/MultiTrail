@@ -1,0 +1,186 @@
+/* The app locks the viewport for the map; this page is an article, it
+   scrolls. Loaded after style.css, so these win. */
+html,
+body.trailPage {
+  overflow: auto;
+  height: auto;
+}
+
+body.trailPage {
+  background-color: white;
+}
+
+#pageBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px;
+  border-radius: var(--radius-card);
+  background-color: white;
+  box-shadow: var(--shadow-float);
+  padding: 6px 12px 6px 10px;
+  font-size: var(--font-heading);
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    background-color: var(--hover-color);
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+}
+
+#pageBackArrow {
+  color: var(--teal-color);
+}
+
+#page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 8px 16px 56px;
+}
+
+#pageHead {
+  margin-top: 16px;
+}
+
+#pageTitle {
+  margin: 4px 0 0;
+  font-size: var(--font-display);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+#pageWhere {
+  margin: 4px 0 0;
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+}
+
+#pageStats {
+  margin-top: 16px;
+  border-top: 1px solid var(--line-color);
+  padding-top: 16px;
+}
+
+#pageSports {
+  margin-top: 12px;
+}
+
+.pageSport {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--line-color);
+  padding: 8px 0;
+  font-size: var(--font-row);
+
+  & span {
+    color: var(--gray-color);
+    font-size: var(--font-meta);
+  }
+}
+
+#pageMap {
+  margin-top: 20px;
+  border-radius: var(--radius-sheet);
+  height: 340px;
+}
+
+#pageProfile {
+  margin-top: 8px;
+}
+
+/* Stacked on a phone, shoulder to shoulder on a desktop */
+#pageActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+
+  & .trailDownload {
+    margin-top: 0;
+  }
+}
+
+.pageParking {
+  display: block;
+  border: 1px solid var(--teal-color);
+  border-radius: var(--radius-card);
+  padding: 14px;
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: var(--teal-color);
+  text-align: center;
+  text-decoration: none;
+
+  &:hover {
+    background-color: var(--teal-soft-color);
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+@media (min-width: 760px) {
+  #pageActions {
+    flex-direction: row;
+
+    & > a {
+      flex: 1;
+    }
+  }
+}
+
+#pageStrava,
+#pageWeather {
+  margin-top: 24px;
+  border-top: 1px solid var(--line-color);
+  padding-top: 16px;
+  min-width: 0;
+}
+
+/* Stacked on a phone; side by side once there is room. auto-fit keeps a
+   lone widget full width when the other one has nothing to show. Grid rows
+   stretch both columns to the taller one, and inside the weather column the
+   iframe soaks up that height, so its bottom edge and the note line up with
+   the Strava card. */
+@media (min-width: 760px) {
+  #pageWidgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 0 24px;
+  }
+
+  #pageWeather {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #weatherFrame {
+    flex: 1;
+    height: auto;
+    min-height: 230px;
+  }
+}
+
+#stravaSlot {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+#weatherFrame {
+  display: block;
+  margin-top: 12px;
+  border: none;
+  border-radius: var(--radius-card);
+  width: 100%;
+  height: 230px;
+}

@@ -31,6 +31,13 @@ export const COUNTRIES = {
   NO: "Nórsko",
 };
 
+/** Authored difficulty grades. */
+export const DIFFICULTY = {
+  easy: "ľahká",
+  moderate: "stredná",
+  hard: "náročná",
+};
+
 /**
  * Whether a route comes back to its start.
  * @param {boolean} loop
@@ -52,4 +59,17 @@ export function plural(count, one, few, many) {
   if (count === 1) return one;
 
   return count >= 2 && count <= 4 ? few : many;
+}
+
+/**
+ * Minutes as hours and minutes once it passes an hour.
+ * @param {number} minutes
+ * @returns {string}
+ */
+export function duration(minutes) {
+  if (minutes < 60) return `${minutes} min`;
+
+  const rest = minutes % 60;
+
+  return rest ? `${Math.floor(minutes / 60)} h ${rest}` : `${minutes / 60} h`;
 }
