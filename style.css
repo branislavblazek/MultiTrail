@@ -607,7 +607,8 @@ body.detail-open #sheet {
 #layerPanel {
   position: fixed;
   z-index: var(--z-panel);
-  top: 56px;
+  /* The chrome button ends at 56px, the panel starts a breath below it */
+  top: 68px;
   right: 12px;
   border-radius: var(--radius-sheet);
   border: none;
