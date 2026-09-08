@@ -57,6 +57,7 @@ export function featureBlock({ slug, name, coords, stats, loop }) {
     strava_id: "",
     strava_token: "",
     parking: null,
+    image: "",
     sports: { run: { duration_min: null, difficulty: "" } },
     tags: [],
     description: { sk: "" },

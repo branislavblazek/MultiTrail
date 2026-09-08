@@ -11,6 +11,8 @@ body.trailPage {
 }
 
 #pageBack {
+  position: absolute;
+  top: 0;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -40,13 +42,37 @@ body.trailPage {
 }
 
 #page {
+  z-index: 1;
+  position: relative;
   max-width: 680px;
-  margin: 0 auto;
+  margin: -100px auto 0 auto;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   padding: 8px 16px 56px;
+  background-color: white;
 }
 
-#pageHead {
-  margin-top: 16px;
+@media (max-width: 760px) {
+  #page {
+    margin: -10px auto 0 auto;
+  }
+}
+
+#pagehead {
+  position: relative;
+}
+
+/* The photo crops itself into a calm banner whatever shape it came in */
+#pageHero {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+@media (min-width: 760px) {
+  #pageHero {
+    aspect-ratio: 6 / 2;
+  }
 }
 
 #pageTitle {

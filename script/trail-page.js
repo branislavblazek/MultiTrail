@@ -45,6 +45,7 @@ export async function initTrailPage() {
   document.getElementById("pageBack").href =
     `./#trail=${encodeURIComponent(properties.slug)}`;
 
+  renderHero(properties);
   renderHead(properties, route);
   renderStats(properties, route);
   renderSports(properties);
@@ -99,6 +100,24 @@ async function findTrail(slug) {
     console.error(`Could not load ${TRAILS}:`, err);
     return null;
   }
+}
+
+/**
+ * The authored photo above the header. The image property names a file in
+ * data/images/<slug>/, so the photo keeps whatever name it came with. Shown
+ * only once it actually loads, so a typo cannot leave a broken frame behind.
+ * @param {*} properties
+ */
+function renderHero(properties) {
+  const { slug, image, name } = properties;
+  if (!image) return;
+
+  const hero = document.getElementById("pageHero");
+  hero.alt = name;
+  hero.addEventListener("load", () => {
+    hero.hidden = false;
+  });
+  hero.src = `./data/images/${encodeURIComponent(slug)}/${encodeURIComponent(image)}`;
 }
 
 /**

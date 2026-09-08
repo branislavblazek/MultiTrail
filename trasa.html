@@ -16,18 +16,19 @@
     <link rel="stylesheet" href="./trail-page.css" />
   </head>
   <body class="trailPage">
-    <a id="pageBack" href="./">
-      <span id="pageBackArrow" aria-hidden="true">←</span>
-      <img src="./favicon.svg" alt="" width="28" height="28" />
-      Späť na mapu
-    </a>
+    <div id="pageHead">
+      <a id="pageBack" href="./">
+        <span id="pageBackArrow" aria-hidden="true">←</span>
+        <img src="./favicon.svg" alt="" width="28" height="28" />
+        Späť na mapu
+      </a>
+      <img id="pageHero" alt="" hidden />
+    </div>
 
     <main id="page">
-      <header id="pageHead">
-        <span id="pageEyebrow" class="eyebrow"></span>
-        <h1 id="pageTitle"></h1>
-        <p id="pageWhere"></p>
-      </header>
+      <span id="pageEyebrow" class="eyebrow"></span>
+      <h1 id="pageTitle"></h1>
+      <p id="pageWhere"></p>
 
       <div id="pageStats"></div>
       <div id="pageSports" hidden></div>
@@ -50,9 +51,7 @@
             hidden
             >Parkovanie ↗</a
           >
-          <button id="pageShare" class="pageSecondary" hidden>
-            Zdieľať ↑
-          </button>
+          <button id="pageShare" class="pageSecondary" hidden>Zdieľať ↑</button>
         </div>
       </div>
 
