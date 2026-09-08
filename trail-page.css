@@ -1,12 +1,16 @@
 /* The app locks the viewport for the map; this page is an article, it
-   scrolls. Loaded after style.css, so these win. */
-html,
-body.trailPage {
+   scrolls. Loaded after style.css, so these win. The html element is the one
+   and only scroller: body stays overflow visible, because a body that is a
+   scroll container of its own would capture position: sticky and never
+   scroll, which quietly kills the hero cover effect. */
+html {
   overflow: auto;
   height: auto;
 }
 
 body.trailPage {
+  overflow: visible;
+  height: auto;
   background-color: white;
 }
 
