@@ -575,7 +575,9 @@ function writeHashNow() {
   if (trail) params.set("trail", trail);
 
   const hash = params.toString();
-  history.replaceState(null, "", hash ? `#${hash}` : location.pathname);
+  // The query survives the rewrite: ?author=true lives there
+  const base = location.pathname + location.search;
+  history.replaceState(null, "", hash ? `${base}#${hash}` : base);
 }
 
 /**

@@ -6,8 +6,15 @@
  * either way, so anyone who adds the parameter gets the same buttons.
  * @returns {boolean}
  */
-export function isAuthor() {
-  const value = new URLSearchParams(location.search).get("author");
+let decided = null;
 
-  return value !== null && value !== "false";
+export function isAuthor() {
+  // Decided once, on the url the page was opened with: the app rewrites the
+  // url while it runs and the mode must not flip midway
+  if (decided === null) {
+    const value = new URLSearchParams(location.search).get("author");
+    decided = value !== null && value !== "false";
+  }
+
+  return decided;
 }
