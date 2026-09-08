@@ -81,7 +81,7 @@ body.trailPage {
 }
 
 #pageHead:has(#pageHero:not([hidden])) + #page {
-  margin-top: calc(-1 * var(--radius-sheet));
+  margin-top: calc(-3 * var(--radius-sheet));
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   padding-top: 20px;
 }
@@ -102,30 +102,6 @@ body.trailPage {
 @media (min-width: 760px) {
   #pageHero {
     aspect-ratio: 6 / 2;
-  }
-}
-
-/* Where the browser can drive an animation by scroll, the photo also drifts
-   up slower than the card: a quiet parallax. Scaled a touch, around the
-   centre, so the drift never uncovers either edge. */
-@supports (animation-timeline: scroll()) {
-  #pageHero:not([hidden]) {
-    transform: scale(1.16);
-    animation: heroDrift linear both;
-    animation-timeline: scroll();
-    animation-range: 0 70dvh;
-  }
-
-  @keyframes heroDrift {
-    to {
-      transform: scale(1.16) translateY(-6%);
-    }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #pageHero {
-    animation: none;
   }
 }
 
