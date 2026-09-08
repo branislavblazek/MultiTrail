@@ -989,9 +989,11 @@ body.detail-open #sheet {
   gap: 28px;
 }
 
+/* One line per stat: the unit sits on the value's baseline */
 .detailStat {
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
+  gap: 5px;
 }
 
 .detailStatValue {
