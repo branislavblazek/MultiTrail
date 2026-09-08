@@ -10,17 +10,22 @@ body.trailPage {
   background-color: white;
 }
 
+/* Fixed and OUTSIDE #pageHead: inside it the sticky stacking context would
+   trap the chip under the card. Compact by default, so it never fights the
+   article for space; the label only comes back where the page has a free
+   gutter beside its 680px column. */
 #pageBack {
-  position: absolute;
-  top: 0;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 16px;
   border-radius: var(--radius-card);
   background-color: white;
   box-shadow: var(--shadow-float);
-  padding: 6px 12px 6px 10px;
+  padding: 6px;
   font-size: var(--font-heading);
   font-weight: 600;
   color: inherit;
@@ -38,27 +43,52 @@ body.trailPage {
 }
 
 #pageBackArrow {
+  margin-left: 4px;
   color: var(--teal-color);
+}
+
+#pageBackLabel {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  #pageBack {
+    padding: 6px 12px 6px 10px;
+  }
+
+  #pageBackLabel {
+    display: inline;
+  }
 }
 
 #page {
   z-index: 1;
   position: relative;
   max-width: 680px;
-  margin: -100px auto 0 auto;
-  border-radius: var(--radius-card) var(--radius-card) 0 0;
+  margin: 0 auto;
   padding: 8px 16px 56px;
   background-color: white;
 }
 
-@media (max-width: 760px) {
-  #page {
-    margin: -10px auto 0 auto;
-  }
+/* The photo is pinned to the top and the card rolls up over it, so the
+   visible strip of the photo narrows as you scroll. Sticky does all of it,
+   no scroll listeners. */
+#pageHead {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  overflow: hidden;
 }
 
-#pagehead {
-  position: relative;
+#pageHead:has(#pageHero:not([hidden])) + #page {
+  margin-top: calc(-1 * var(--radius-sheet));
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  padding-top: 20px;
+}
+
+/* No photo: the card starts at the very top, so it clears the fixed chip */
+#pageHead:not(:has(#pageHero:not([hidden]))) + #page {
+  padding-top: 76px;
 }
 
 /* The photo crops itself into a calm banner whatever shape it came in */
@@ -72,6 +102,30 @@ body.trailPage {
 @media (min-width: 760px) {
   #pageHero {
     aspect-ratio: 6 / 2;
+  }
+}
+
+/* Where the browser can drive an animation by scroll, the photo also drifts
+   up slower than the card: a quiet parallax. Scaled a touch, around the
+   centre, so the drift never uncovers either edge. */
+@supports (animation-timeline: scroll()) {
+  #pageHero:not([hidden]) {
+    transform: scale(1.16);
+    animation: heroDrift linear both;
+    animation-timeline: scroll();
+    animation-range: 0 70dvh;
+  }
+
+  @keyframes heroDrift {
+    to {
+      transform: scale(1.16) translateY(-6%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #pageHero {
+    animation: none;
   }
 }
 
