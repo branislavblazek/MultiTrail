@@ -46,17 +46,19 @@ body.trailPage {
   }
 }
 
-/* The glyph rides on its own font metrics, which Android renders lower than
-   the desktop fonts do. A grid box the size of the logo centres it for real
-   instead of trusting the line box. */
+
 #pageBackArrow {
   display: inline-grid;
   place-items: center;
   margin-left: 4px;
   width: 20px;
   height: 28px;
-  line-height: 1;
   color: var(--teal-color);
+
+  /* A drawn arrow, not a font glyph: every platform renders it the same */
+  & svg {
+    display: block;
+  }
 }
 
 #pageBackLabel {
