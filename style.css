@@ -768,6 +768,7 @@ body.detail-open #sheet {
   cursor: help;
 }
 
+.layerNameInput,
 .layerSlugInput {
   flex: 1;
   min-width: 0;
@@ -1038,6 +1039,16 @@ body.detail-open #sheet {
   line-height: 1.6;
   /* Authored \n in the json reads as a paragraph break */
   white-space: pre-line;
+}
+
+/* In the sheet the description is a taste of the trail, three lines and an
+   ellipsis; the whole of it is on the trail page */
+#detailBody .trailDescription {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
 .trailTags {

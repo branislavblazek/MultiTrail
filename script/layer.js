@@ -286,7 +286,9 @@ function createLayerItem(map, state) {
 
   // Publishing is an authoring job, the rest of the panel is for everyone
   const publishing = isAuthor()
-    ? createPublishing(state, tolerance.input)
+    ? createPublishing(state, tolerance.input, (renamed) => {
+        name.textContent = renamed;
+      })
     : null;
 
   styleFold.inner.append(createRow("Farba", color), width.row, opacity.row);
@@ -305,13 +307,15 @@ function createLayerItem(map, state) {
 }
 
 /**
- * Builds the publishing fold: the slug, what the two outputs will hold, and
- * the button that writes them. Author only, so it is not built otherwise.
+ * Builds the publishing fold: the name, the slug, what the two outputs will
+ * hold, and the button that writes them. Author only, so it is not built
+ * otherwise.
  * @param {*} state layer state
  * @param {HTMLInputElement} toleranceInput the simplify slider to follow
+ * @param {(name: string) => void} [onRename] told when the name is edited
  * @returns {{ button: HTMLElement, rows: HTMLElement, describe: Function }}
  */
-function createPublishing(state, toleranceInput) {
+function createPublishing(state, toleranceInput, onRename) {
   const button = element("button", "layerPublish");
   button.textContent = "📤";
   button.title = "Publish as a recommended trail";
@@ -320,11 +324,34 @@ function createPublishing(state, toleranceInput) {
     if (open) describe();
   });
 
+  // Until the slug is written by hand it follows the name, the way it did
+  // when the track was imported
+  let slugEdited = false;
+
+  const title = element("input", "layerNameInput");
+  title.value = state.name;
+  title.title = "Name of the trail, written into the GPX and the block";
+  title.addEventListener("input", () => {
+    state.name = title.value;
+    onRename?.(state.name);
+
+    if (slugEdited) return;
+
+    state.slug = slugify(state.name);
+    slug.value = state.slug;
+    describe();
+  });
+  title.addEventListener("blur", () => {
+    state.name = title.value = title.value.trim();
+    onRename?.(state.name);
+  });
+
   const slug = element("input", "layerSlugInput");
   slug.value = state.slug;
   slug.spellcheck = false;
   slug.title = "Filename, map id and url of the published trail";
   slug.addEventListener("input", () => {
+    slugEdited = true;
     state.slug = slug.value;
   });
   slug.addEventListener("blur", () => {
@@ -390,7 +417,14 @@ function createPublishing(state, toleranceInput) {
       (state.trackCount > 1 ? ` · first of ${state.trackCount} tracks` : "");
   });
 
-  fold.inner.append(createRow("Slug", slug), meta, save, block, status);
+  fold.inner.append(
+    createRow("Názov", title),
+    createRow("Slug", slug),
+    meta,
+    save,
+    block,
+    status,
+  );
 
   return { button, rows: fold.rows, describe };
 }
