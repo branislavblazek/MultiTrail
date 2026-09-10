@@ -46,7 +46,6 @@ body.trailPage {
   }
 }
 
-
 #pageBackArrow {
   display: inline-grid;
   place-items: center;
@@ -95,9 +94,15 @@ body.trailPage {
 }
 
 #pageHead:has(#pageHero:not([hidden])) + #page {
-  margin-top: calc(-3 * var(--radius-sheet));
+  margin-top: calc(-1 * var(--radius-sheet));
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   padding-top: 20px;
+}
+
+@media (min-width: 760px) {
+  #pageHead:has(#pageHero:not([hidden])) + #page {
+    margin-top: calc(-4 * var(--radius-sheet));
+  }
 }
 
 /* No photo: the card starts at the very top, so it clears the fixed chip */
