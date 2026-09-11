@@ -16,7 +16,7 @@
         "strava_id": "13534212696",
         "strava_token": "mLYSaYEEvYjtzBCp8JeWXDn27EbiAKes-gs3GToZK3w",
         "parking": "https://maps.app.goo.gl/jH7DWwgEdSiqNJNH6",
-        "image": "image.jpg",
+        "image": "image.webp",
         "weather_point": "ovčiarsko_slovensko_3058313",
         "sports": {
           "run": {
@@ -181,7 +181,7 @@
         "strava_id": "19936039765",
         "strava_token": "zu7M_JppIAZ1XmQjH9rgt9-eZn2SHJfUZLhFV-tLMXs",
         "parking": "https://maps.app.goo.gl/BFdpqbW5u7urC9Mz8",
-        "image": "image.jpg",
+        "image": "image.webp",
         "weather_point": "ostrý-roháč_slovensko_3058324",
         "sports": {
           "run": {
@@ -472,7 +472,7 @@
         "strava_id": "11886051365",
         "strava_token": "qayem1T-rqLHlGCkmRabqs_bCicG6kldcQtc1uVGCG4",
         "parking": "https://maps.app.goo.gl/3rBXxfoy8SKqXeXh9",
-        "image": "image.jpg",
+        "image": "image.webp",
         "sports": {
           "run": {
             "duration_min": 420,
@@ -775,7 +775,7 @@
         "strava_id": "11942860655",
         "strava_token": "T4cL-hACL0NkwgIxsR2k-rKBTD9HBZhfUM64H4qIQXs",
         "parking": "https://maps.app.goo.gl/eZCZTVUi2W3hxb1b6",
-        "image": "image.jpg",
+        "image": "image.webp",
         "sports": {
           "run": {
             "duration_min": 240,

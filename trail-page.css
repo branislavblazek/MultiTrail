@@ -102,7 +102,7 @@ body.trailPage {
 @media (min-width: 760px) {
   #pageHead:has(#pageHero:not([hidden])) + #page {
     margin-top: calc(-4 * var(--radius-sheet));
-    box-shadow: black 0 0px 50px 10px;
+    box-shadow: var(--shadow-float);
   }
 }
 
