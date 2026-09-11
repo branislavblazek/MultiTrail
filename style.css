@@ -1037,6 +1037,7 @@ body.detail-open #sheet {
   color: var(--gray-color);
   font-size: var(--font-body);
   line-height: 1.6;
+  text-align: justify;
   /* Authored \n in the json reads as a paragraph break */
   white-space: pre-line;
 }
