@@ -21,12 +21,12 @@
         "sports": {
           "run": {
             "duration_min": 80,
-            "difficulty": "medium"
+            "difficulty": "moderate"
           }
         },
         "tags": ["okruh", "obľúbené", "ranný beh", "single track", "pes"],
         "description": {
-          "sk": "Nádherná trasa v blízkosti Žiliny. Rozhodne odporúčam na východ alebo západ slnka. Od obecného úradu sa ide cez lúku s kravami. Na vrchole sa vchádza do lesa na single-track. Tým sa prebehne na vyhliadku nad Hričovským Podhradím (ale môže sa vynechať). Z vyhliadky dole do dediny a hneď hore na hrad Hričov. Stále po červenej. Z hradu popri altánku chvílu, asi 100 metrov, po zvážnici a následne odbočiť doľava na širšiu zvážnicu. Táto mierne stúpa na lúku s ovcami. Na nej sa treba držať vpravo pri lese. Niekde tam je odbočka do lesa - tou sa zbehne na čistinku, kde je vrak bielej dodávky. Tá je neďaleko Paštinej Závady. Tu sa len prebehne cez cestu a posledné stúpanie cez lúku, okolo ďalších kráv. Na vrchole je vidno poľovnícky posed. Treba ísť smerom k nemu a bežať za neho. Tu je malá odbočka doľava pred drevenou búdou v lese a tá ústí pri prvej lúke s kravami. Od nej len dole na parkovisko."
+          "sk": "Nádherná trasa v blízkosti Žiliny. Rozhodne odporúčam počas východu/západu slnka.\n\nOd obecného úradu stúpame cez lúku s kravami. Na vrchole sa vchádza do lesa na single-track. Týmto vieme rezko prebehnúť na vyhliadku nad Hričovským Podhradím - ruiny zrejme starého hradu. Z vyhliadky zbehneme dole do dediny a hneď hore na hrad Hričov - stále po červenej. Na hrade sa dá výjsť až na vežu odkiaľ je krásny výhľad na Považie a Súľov. Z hradu prebehneme po zvážnici do Paštinnej Závady kde začína posledné stúpanie. Tesne pod vrcholom je moje obľúbené miesto na pozeranie sa. Vlnité lúky, kravy a v pozadí Lietavský hrad."
         }
       },
       "geometry": {
@@ -481,7 +481,7 @@
         },
         "tags": ["okruh", "VHT", "štít", "vrchol"],
         "description": {
-          "sk": "Krásny okruh v Západných Tatrách. Trasa je menej technicky náročná oproti cetrálnemu hrebeňu - je tu menej exponovaných úsekov avšak na spoločnej trase treba absolvovať pár reťazí.\n\nZ parkoviska v Račkovej doline je dlhé tiahle stúpanie na prvý vrchol - Baranec. Z neho po hreneni pokračuje trasa na Žiarske sedlo. Pod ním je Žiarska chata ale treba počítať s klesaním. Stúpaním sa napája centrálny hrebeň - prvý bod je vrchol Plačlivé. Z neho cez Ostrý Roháč na Volovec. Na tomto úseku sú reťaze. Z Volovca sa odbočuje doprava na Hrubý vrch, Končistú a posledný Klin. Pod Sivou vežou sa okruh točí dole do doliny. Dolina je nekonečná ale na konci, pri parkovisku, je možné sa okúpať v rieke."
+          "sk": "Krásny okruh v Západných Tatrách. Trasa je menej technicky náročná oproti cetrálnemu hrebeňu - je tu menej exponovaných úsekov avšak na spoločnej trase treba absolvovať pár reťazí.\n\nZ parkoviska v Račkovej doline je dlhé tiahle stúpanie na prvý vrchol - Baranec. Z neho po hreneni pokračuje trasa na Žiarske sedlo. Pod ním je Žiarska chata ale treba počítať s klesaním. Stúpaním sa napája centrálny hrebeň - prvý bod je vrchol Plačlivé. Z neho cez Ostrý Roháč na Volovec. Na tomto úseku sú reťaze. Z Volovca sa odbočuje doprava na Hrubý vrch, Končistú a posledný Klin. Pod Sivou vežou sa okruh točí dole do doliny. Dolina je nekonečná ale na konci, pri parkovisku, je možné okúpať sa v rieke."
         }
       },
       "geometry": {
@@ -779,12 +779,12 @@
         "sports": {
           "run": {
             "duration_min": 240,
-            "difficulty": "medium"
+            "difficulty": "moderate"
           }
         },
         "tags": ["okruh", "VHT", "štít", "vrchol", "chata"],
         "description": {
-          "sk": "Jednoduchší okruh v Západných Tatrách. Oproti iným trasám je pomerne ľahká - žiadne lezenie cez reťaze.\n\nZ parkoviska začína trasa stúpať. Po tiahlom stúpaní prichádza prvý kopec - Baranec. Veľmi obľúbený aj v zime. Z neho hrebeňovou trasou na Žiarske sedlo. Dole cez Žiarske pleso na Žiarsku chatu. V prípade nudy sa dá vybehnúť zo sedla na Plačlivé a späť na chatu. Celá trasa je technicky nenáročná a ponúka krásne výhľady za (relatívne) málo úsilia."
+          "sk": "Jednoduchší okruh v Západných Tatrách. Oproti iným trasám je pomerne ľahká - žiadne lezenie cez reťaze.\n\nZ parkoviska začíname stúpať. Po tiahlom stúpaní prichádza prvý kopec - Baranec. Veľmi obľúbený aj v zime. Z neho pokračujeme hrebeňovou trasou na Žiarske sedlo. V prípade nudy sa dá vybehnúť zo sedla na Plačlivé. Zo Žiarskeho plesa chvíľu klesáme na Žiarsku chatu. Celá trasa je technicky nenáročná a ponúka krásne výhľady za (relatívne) málo úsilia. Samotná Žiarska chata je obľubená aj v zime - vedie tu asfalt, čiže je to príjemný cieľ pre cyklistov aj psíčkarov."
         }
       },
       "geometry": {
@@ -979,7 +979,7 @@
         },
         "tags": ["tam a späť", "chata", "dolina", "pes", "rodina"],
         "description": {
-          "sk": "Krásna trasa po doline aj so psami (pozor, musia byť na vôdzke) alebo na prechádzku s rodinou. Na začiatku je veľa možností na parkovanie, treba si len vybrať na základe recenzií. Hneď v úvode sa dajú kúpiť v rôznych stánkoch grilované syrečky s džemom. Dolina je krásna, cestou je vidieť štíty Západných Tatier. Na konci je chata s občerstvením. Blízko chaty sú drevenné salaše a počas jesene tu rastú nejaké fialové kvety a toto miesto je dosť vyhľadávané."
+          "sk": "Krásna trasa po doline aj so psami (pozor, musia byť na vôdzke) alebo na prechádzku s rodinou. Na začiatku je veľa možností na parkovanie, treba si len vybrať na základe recenzií. Hneď v úvode sa dajú kúpiť v rôznych stánkoch grilované syrečky s džemom. Dolina je krásna, cestou je vidieť štíty Západných Tatier. Na konci je chata s občerstvením. Blízko chaty sú drevenné salaše a počas jesene tu rastú fialové kvety vďaka ktorým je toto miesto dosť vyhľadávané."
         }
       },
       "geometry": {
@@ -1143,12 +1143,12 @@
         "sports": {
           "hike": {
             "duration_min": 500,
-            "difficulty": "medium"
+            "difficulty": "moderate"
           }
         },
         "tags": ["okruh", "vrchol", "štít", "chata"],
         "description": {
-          "sk": "Symbol Slovenska - na tento štít vedie bezpečná trasa z parkoviska Tri Studničky. Nie je potrebné liezť. Je možné sa vrátiť tou istou trasou alebo spraviť okruh cez Jamské pleso a odtiaľ späť na Tri Studničky. Práve cez Jamské pleso vedia ďalšia turistická trasa zo Štrbského plesa."
+          "sk": "Symbol Slovenska - a zároveň znak na slovenských eurocentoch.\n\nNa tento štít vedie bezpečná trasa z parkoviska Tri Studničky bez potreby lezenia. Je možné sa vrátiť tou istou trasou alebo spraviť okruh cez Jamské pleso a odtiaľ späť na Tri Studničky. Práve cez Jamské pleso vedia ďalšia turistická trasa zo Štrbského plesa."
         }
       },
       "geometry": {
@@ -1330,12 +1330,12 @@
         "sports": {
           "hike": {
             "duration_min": 270,
-            "difficulty": "medium"
+            "difficulty": "moderate"
           }
         },
         "tags": ["tam a späť", "chata", "vrchol", "štít"],
         "description": {
-          "sk": "Najľahšia dvojtisícka vo Vysokých Tatrách. Zo Štrbského plesa trasa stúpa po zjazdovke k Chate pod Soliskom. Tu je možné príst aj lanovkou. Od nej to je chvíľa, možno pol hodina pomaly na vrchol Predné Solisko."
+          "sk": "Najľahšia dvojtisícka vo Vysokých Tatrách. Zo Štrbského plesa trasa stúpame po zjazdovke k Chate pod Soliskom, kde je možné príst aj lanovkou. Od nej to je chvíľa, možno pol hodina pomaly na vrchol Predné Solisko."
         }
       },
       "geometry": {
@@ -1436,12 +1436,12 @@
         "sports": {
           "hike": {
             "duration_min": 500,
-            "difficulty": "medium"
+            "difficulty": "moderate"
           }
         },
         "tags": ["tam a späť", "chata", "vrchol", "štít", "najvyšší vrchol"],
         "description": {
-          "sk": "Najvyšší vrch Poľska - Rysy. Zo Štrbského plesa trasa začína zľahka na Popradské pleso. Tu je možnosť prvého občerstvenia. Z plesa trasa stúpa Mengusovskou dolinou k rázcestníku. Doľava je Kôprovský štít, vpravo Rysy. Od Veľkého Žabieho plesa mengusovského začína skalnatý terén a aj rebríky. Tu sa často tvoria zápchy. Od neho to už nie je ďaleko na Slobodné kráľovstvo Rysy - Chata pod Rysmi. Toto je najvyššie položená vysokohorská chata na Slovensku. Od nej na vrchol už nie je ďaleko. Dole po tej istej trase."
+          "sk": "Najvyšší vrch Poľska - Rysy.\n\nZo Štrbského plesa trasa začíname zľahka na Popradské pleso. Tu je možnosť prvého občerstvenia. Z plesa trasa stúpa Mengusovskou dolinou k rázcestníku. Vľavo je odbočka na Kôprovský štít, vpravo na Rysy. Od Veľkého Žabieho plesa mengusovského začína skalnatý terén a aj rebríky, kde sa často tvoria kolóny. Od neho to už nie je ďaleko na Chatu pod Rysmi - najvyššie položenú vysokohorskú chata na Slovensku. Na samotný vrchol to už nie je ďaleko. Zostup je po tej istej trase."
         }
       },
       "geometry": {
@@ -1768,12 +1768,12 @@
         "sports": {
           "hike": {
             "duration_min": 540,
-            "difficulty": "medium"
+            "difficulty": "moderate"
           }
         },
         "tags": ["tam a späť", "chata", "vrchol", "štít"],
         "description": {
-          "sk": "Krásny turistický dostupný štít. Z parkoviska v Starom Smokovci sa dá ísť buď na Hrebienok alebo na Rázcestie pod Slavkovským Štítom. Z neho len po modrej na samotný vrchol. Trasa je od polovice skalnatá. Tu sa značka stráca medzi kameňmi a preto odporúčam sledovať navigáciu. Odporúčam veľa vody - chata je až pri zostupe na Hrebienku. Z vrcholu je krásne vidno suseda - Gerlach. Svojho času sa tu dalo ísť so psami."
+          "sk": "Krásny turisticky dostupný štít. Pomenovaný po našom hokejistovi?\n\nZ parkoviska v Starom Smokovci môžeme ísť buď cez Hrebienok alebo cez Rázcestie pod Slavkovským Štítom. Z neho nasledujeme modrú značku až na vrchol. Trasa je od polovice skalnatá - tu sa značka stráca medzi kameňmi a preto odporúčam sledovať navigáciu. Rovnako odporúčam veľa vody - chata je až pri zostupe na Hrebienku. Z vrcholu je krásne vidno suseda - Gerlach. Svojho času sa tu dalo ísť so psami."
         }
       },
       "geometry": {
