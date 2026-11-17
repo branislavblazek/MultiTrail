@@ -1,0 +1,419 @@
+/* Admin mode. Loaded by script/admin-editor.js and only next to the local
+   admin server, so none of it reaches a visitor. Every colour, radius and
+   size is a variable from style.css, and the form is built out of the filter
+   controls, so the editor cannot drift away from the rest of the app. */
+
+:root {
+  /* Over the detail sheet, which stays open under the editor */
+  --z-admin: 9;
+  --z-toast: 10;
+}
+
+/* ------------------------------------------------------------ map chrome */
+
+.adminBadge {
+  border-radius: var(--radius-pill);
+  background-color: var(--teal-soft-color);
+  padding: 3px 8px;
+  color: var(--teal-color);
+  font-size: var(--font-block);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#adminNewButton .chromeIcon {
+  color: var(--teal-color);
+  font-weight: 600;
+}
+
+/* The edit button of a trail card, and the one that connects Strava: the
+   quiet teal outline of the trail page */
+.adminEdit,
+.adminConnect > button:not(.resetLink) {
+  display: block;
+  margin-top: 12px;
+  border: 1px solid var(--teal-color);
+  border-radius: var(--radius-card);
+  background: none;
+  width: 100%;
+  padding: 12px;
+  font: inherit;
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: var(--teal-color);
+  cursor: pointer;
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--teal-soft-color);
+    }
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+/* ---------------------------------------------------------------- editor */
+
+#adminPanel {
+  position: fixed;
+  z-index: var(--z-admin);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background-color: white;
+  box-shadow: var(--shadow-sheet);
+  height: var(--sheet-full);
+  overflow: hidden;
+  transform: translateY(calc(100% + 8px));
+  transition: transform 0.3s ease-in-out;
+
+  &.active {
+    transform: translateY(0);
+  }
+}
+
+#adminHead {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 8px;
+  padding: 20px 16px 16px;
+
+  & .eyebrow {
+    grid-column: 1;
+  }
+}
+
+#adminTitle {
+  grid-column: 1;
+  margin: 4px 0 0;
+  font-size: var(--font-display);
+  font-weight: 500;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+#adminClose {
+  grid-row: 1 / 3;
+  grid-column: 2;
+  align-self: start;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 4px 6px;
+  font-size: var(--font-icon);
+  line-height: 1;
+  cursor: pointer;
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+}
+
+/* The form sits on the same shade the filters do, so its white fields read
+   as fields */
+#adminBody {
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--line-color);
+  background-color: var(--shade-color);
+  padding: 16px 16px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The head already drew a line above the first section */
+#adminBody > .detailSection:first-child {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+  /* Scrolled back to, it keeps the padding of the body above it */
+  scroll-margin-top: 16px;
+}
+
+#adminFoot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--line-color);
+  padding: 12px 16px 16px;
+}
+
+#adminStatus {
+  margin: 0;
+  color: var(--black-color);
+  text-align: center;
+}
+
+#adminDelete {
+  align-self: center;
+  color: var(--gray-color);
+
+  &.armed {
+    color: var(--black-color);
+    font-weight: 600;
+  }
+}
+
+.adminPrimary {
+  border: none;
+  border-radius: var(--radius-card);
+  background-color: var(--teal-color);
+  width: 100%;
+  padding: 15px;
+  font: inherit;
+  font-size: var(--font-row);
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+/* ------------------------------------------------------------------ form */
+
+.adminGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.adminWide {
+  grid-column: 1 / -1;
+}
+
+.adminHint {
+  margin: 6px 0 0;
+  color: var(--gray-color);
+  font-size: var(--font-meta);
+  line-height: 1.45;
+}
+
+/* Inside the grid the gap already spaces it from the fields above */
+.adminGrid > .adminHint {
+  margin-top: -6px;
+}
+
+.adminStats {
+  margin-top: 12px;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.adminSlider {
+  margin-top: 10px;
+
+  & .layerRowLabel {
+    width: 68px;
+  }
+}
+
+/* Where a track can come from: a file, or the Strava activity */
+.adminSources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+
+  & > .adminPick {
+    margin-top: 0;
+  }
+}
+
+/* What Strava has to be given before it hands a track over */
+.adminConnect {
+  margin-top: 8px;
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-card);
+  background-color: white;
+  padding: 14px;
+
+  & > .adminHint {
+    margin-top: 0;
+  }
+
+  & a {
+    color: var(--teal-color);
+  }
+
+  & > .resetLink {
+    display: block;
+    margin: 12px auto 0;
+  }
+}
+
+/* A file picker, and a place to drop the file on. As a button, it has the
+   same look for what is fetched rather than picked. */
+.adminPick {
+  display: block;
+  margin-top: 12px;
+  border: 1px solid var(--line-color);
+  border-radius: var(--radius-card);
+  background-color: white;
+  padding: 11px 14px;
+  font: inherit;
+  font-size: var(--font-meta);
+  font-weight: 600;
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background-color: var(--hover-color);
+    }
+  }
+
+  &:active {
+    background-color: var(--press-color);
+  }
+
+  &.over {
+    border-color: var(--teal-color);
+    background-color: var(--teal-soft-color);
+    color: var(--teal-color);
+  }
+}
+
+/* The chip switches a sport on, the two fields next to it describe it */
+.adminSport {
+  display: grid;
+  grid-template-columns: 104px 1fr 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+
+  .detailSection + & {
+    margin-top: 12px;
+  }
+
+  & .filterChip {
+    padding: 11px 8px;
+    font-size: var(--font-row);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+#adminBody .filterInput:disabled,
+#adminBody .filterSelect:disabled {
+  background-color: transparent;
+  color: var(--gray-color);
+  opacity: 0.6;
+}
+
+/* Number fields scroll their value under a passing wheel otherwise */
+#adminBody input[type="number"] {
+  appearance: textfield;
+}
+
+.adminText {
+  display: block;
+  margin-top: 12px;
+  min-height: 150px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+#adminBody .filterChips {
+  margin-top: 12px;
+}
+
+.adminGap {
+  height: 12px;
+}
+
+/* The crop the trail page will make of it on a phone */
+.adminPhoto {
+  display: block;
+  margin-top: 12px;
+  border-radius: var(--radius-card);
+  background-color: var(--press-color);
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+/* ----------------------------------------------------------------- toast */
+
+#adminToast {
+  position: fixed;
+  z-index: var(--z-toast);
+  bottom: 28px;
+  left: 50%;
+  border-radius: var(--radius-pill);
+  background-color: var(--black-color);
+  box-shadow: var(--shadow-float);
+  padding: 10px 18px;
+  color: white;
+  font-size: var(--font-meta);
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 12px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+
+  &.shown {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (min-width: 760px) {
+  /* The whole right column, over the author panel and the detail card */
+  #adminPanel {
+    top: 84px;
+    right: 20px;
+    bottom: 20px;
+    left: auto;
+    border-radius: var(--radius-sheet);
+    box-shadow: var(--shadow-float);
+    width: 420px;
+    height: auto;
+    transform: translateX(calc(100% + 20px));
+
+    &.active {
+      transform: translateX(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #adminPanel,
+  #adminToast {
+    transition: none;
+  }
+}

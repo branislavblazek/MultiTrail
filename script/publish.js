@@ -32,27 +32,37 @@ export function slugify(text) {
 }
 
 /**
- * Builds the feature block to paste into trails.geojson. Everything that can
- * be measured is filled in; everything authored is left empty on purpose, so
- * that a half filled trail is obvious rather than plausible.
+ * The numbers of a track as trails.geojson stores them: whole meters.
+ * @param {*} stats distance, ascent and descent, as trackStats measures them
+ * @returns {{ distance_m: number, ascent_m: number|null, descent_m: number|null }}
+ */
+export function measured(stats) {
+  return {
+    distance_m: Math.round(stats.distance),
+    ascent_m: stats.ascent === null ? null : Math.round(stats.ascent),
+    descent_m: stats.descent === null ? null : Math.round(stats.descent),
+  };
+}
+
+/**
+ * The properties a trail starts out with. Everything that can be measured is
+ * filled in; everything authored is left empty on purpose, so that a half
+ * filled trail is obvious rather than plausible.
  * @param {*} trail
  * @param {string} trail.slug
  * @param {string} trail.name
- * @param {[number, number, number?][]} trail.coords reduced, for the map
  * @param {*} trail.stats distance, ascent and descent of the published track
  * @param {boolean} trail.loop
- * @returns {string} pretty printed json, coordinates on a single line
+ * @returns {*} properties, in the order they are kept in trails.geojson
  */
-export function featureBlock({ slug, name, coords, stats, loop }) {
-  const properties = {
+export function emptyProperties({ slug, name, stats, loop }) {
+  return {
     slug,
     kind: "route",
     name,
     country: "",
     region: "",
-    distance_m: Math.round(stats.distance),
-    ascent_m: stats.ascent === null ? null : Math.round(stats.ascent),
-    descent_m: stats.descent === null ? null : Math.round(stats.descent),
+    ...measured(stats),
     loop,
     strava_id: "",
     strava_token: "",
@@ -62,11 +72,34 @@ export function featureBlock({ slug, name, coords, stats, loop }) {
     tags: [],
     description: { sk: "" },
   };
+}
 
-  const flat = coords.map(([lng, lat]) => [
+/**
+ * Coordinates as they are published for the map: no elevation, and no more
+ * decimals than a line on a map can show.
+ * @param {[number, number, number?][]} coords
+ * @returns {[number, number][]}
+ */
+export function publishedCoordinates(coords) {
+  return coords.map(([lng, lat]) => [
     +lng.toFixed(PRECISION),
     +lat.toFixed(PRECISION),
   ]);
+}
+
+/**
+ * Builds the feature block to paste into trails.geojson.
+ * @param {*} trail
+ * @param {string} trail.slug
+ * @param {string} trail.name
+ * @param {[number, number, number?][]} trail.coords reduced, for the map
+ * @param {*} trail.stats distance, ascent and descent of the published track
+ * @param {boolean} trail.loop
+ * @returns {string} pretty printed json, coordinates on a single line
+ */
+export function featureBlock({ slug, name, coords, stats, loop }) {
+  const properties = emptyProperties({ slug, name, stats, loop });
+  const flat = publishedCoordinates(coords);
 
   return [
     "{",

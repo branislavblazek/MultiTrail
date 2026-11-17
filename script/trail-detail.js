@@ -17,6 +17,9 @@ const cache = new Map();
 /** What to tell the panel when the reader closes a detail. */
 let dismissed = null;
 
+/** Builders of extra controls for the card, such as the admin's edit button. */
+const actions = [];
+
 /**
  * Registers what happens when a trail detail is closed. The panel lets go of
  * the trail then, so a closed detail never leaves a trail selected with
@@ -25,6 +28,15 @@ let dismissed = null;
  */
 export function onTrailDetailClosed(handler) {
   dismissed = handler;
+}
+
+/**
+ * Adds a control to the bottom of every trail card opened from now on. The
+ * card knows nothing about who asks: admin mode uses it for its edit button.
+ * @param {(feature: *) => HTMLElement|null} build null leaves a card alone
+ */
+export function addTrailDetailAction(build) {
+  actions.push(build);
 }
 
 /**
@@ -43,6 +55,11 @@ export function openTrailDetail(map, feature) {
   if (tags) body.push(tags);
 
   body.push(pageLink(slug));
+
+  for (const build of actions) {
+    const control = build(feature);
+    if (control) body.push(control);
+  }
 
   showDetail({
     id: slug,

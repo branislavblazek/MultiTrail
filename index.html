@@ -94,6 +94,7 @@
       import { initLayerDetail } from "./script/layer-detail.js";
       import { loadTrails } from "./script/trails.js";
       import { initTrailPanel } from "./script/trail-panel.js";
+      import { initAdmin } from "./script/admin.js";
 
       const TRAILS = "./data/trails.geojson";
 
@@ -105,7 +106,10 @@
       initLayerDetail(map);
 
       try {
-        initTrailPanel(map, await loadTrails(map, TRAILS));
+        const trails = await loadTrails(map, TRAILS);
+
+        initTrailPanel(map, trails);
+        initAdmin(map, trails); // Only does anything next to the admin server
       } catch (err) {
         console.error(`Could not load ${TRAILS}:`, err);
       }
