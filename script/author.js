@@ -1,20 +1,16 @@
+/** Where the app runs when it is opened from the machine it is authored on. */
+const LOCAL = ["localhost", "127.0.0.1", "[::1]"];
+
 /**
- * Whether the page is open in author mode, which is what publishing a trail
- * needs. Everything else, the layer panel included, is there for everyone.
+ * Whether the page is open on the author's own machine. That alone switches
+ * the authoring tools on: publishing from the layer panel, and the admin
+ * editor when its server is there. Nothing in the url does, so on the public
+ * site they cannot be asked for.
  *
  * This only hides the tools, it guards nothing: the data files are public
- * either way, so anyone who adds the parameter gets the same buttons.
+ * either way, and writing them takes the local admin server.
  * @returns {boolean}
  */
-let decided = null;
-
 export function isAuthor() {
-  // Decided once, on the url the page was opened with: the app rewrites the
-  // url while it runs and the mode must not flip midway
-  if (decided === null) {
-    const value = new URLSearchParams(location.search).get("author");
-    decided = value !== null && value !== "false";
-  }
-
-  return decided;
+  return LOCAL.includes(location.hostname);
 }

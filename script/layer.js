@@ -46,8 +46,7 @@ export function initLayerPanel() {
 
   button.addEventListener("click", () => panel.classList.toggle("active"));
 
-  // Otherwise author mode is invisible until a card exists, and it looks
-  // like ?author=true did nothing
+  // Otherwise author mode is invisible until a card exists
   if (isAuthor()) {
     document.getElementById("layerHint").textContent =
       "Autorský režim · nahraj GPX, uprav a publikuj cez 📤";

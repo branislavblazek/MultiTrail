@@ -575,7 +575,7 @@ function writeHashNow() {
   if (trail) params.set("trail", trail);
 
   const hash = params.toString();
-  // The query survives the rewrite: ?author=true lives there
+  // Only the hash is rewritten, a query the page was opened with stays
   const base = location.pathname + location.search;
   history.replaceState(null, "", hash ? `${base}#${hash}` : base);
 }

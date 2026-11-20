@@ -41,3 +41,8 @@ odpojí.
 Na produkcii server nebeží, takže tam editor nenabehne: mimo `localhost` sa
 appka na admin ani nepýta a editor ani jeho štýly sa nenačítajú. Server
 počúva len na `127.0.0.1` a nemá žiadne závislosti.
+
+Na `localhost` sa samé zapnú aj autorské nástroje v paneli **Moje trasy**
+(publikovanie nahratého GPX cez 📤). Žiadny parameter v adrese na to netreba
+a mimo `localhost` sa zapnúť nedajú. Fungujú aj s obyčajným statickým
+serverom. Zapisovať do `data/` vie len editor cez admin server.

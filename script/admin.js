@@ -1,5 +1,4 @@
-/** Where the app runs when it is opened from the machine it is authored on. */
-const LOCAL = ["localhost", "127.0.0.1", "[::1]"];
+import { isAuthor } from "./author.js";
 
 /**
  * Turns admin mode on when there is something to write through: the local
@@ -13,7 +12,7 @@ const LOCAL = ["localhost", "127.0.0.1", "[::1]"];
  * @param {*[]} trails everything trails.geojson holds
  */
 export async function initAdmin(map, trails) {
-  if (!LOCAL.includes(location.hostname)) return;
+  if (!isAuthor()) return;
 
   try {
     const response = await fetch("./api/admin");
