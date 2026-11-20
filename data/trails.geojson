@@ -11637,6 +11637,100 @@
           [18.86953, 49.18285]
         ]
       }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "slug": "sk-rochovica",
+        "kind": "route",
+        "name": "Rochovica",
+        "country": "SK",
+        "region": "Kysuce",
+        "distance_m": 8435,
+        "ascent_m": 528,
+        "descent_m": 529,
+        "loop": true,
+        "strava_id": "16370650156",
+        "strava_token": "AXXUDEnbfgCweNdK08p5_yiEpTuzrrnufzGGCQHLGyc",
+        "parking": "https://maps.app.goo.gl/x44myB1TvFv2LmkSA",
+        "image": "image.webp",
+        "sports": {
+          "run": {
+            "duration_min": 70,
+            "difficulty": "easy"
+          },
+          "hike": {
+            "duration_min": 200,
+            "difficulty": "easy"
+          }
+        },
+        "tags": ["obľúbené", "okruh", "pes", "ranný beh"],
+        "description": {
+          "sk": "Rochovica je kopec, ktorý spolu s protiľahlou Brodniankou tvoria bránu na Kysuce.\nPri parkovaní treba myslieť na to, aby autá od lesníkov vedeli prejsť do lesa.\nOd štartu stúpame lesnou cestou až na vrchol Rochovice podľa navigácie. Na hrebeni sú paradoxne asi 3 vrcholy ale my ideme až na ten posledný, kde je vrcholová kniha a lavička.\nCestou dole môžeme ísť tak isto, alebo si spraviť okruh podľa navigácie."
+        }
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [18.73346, 49.24515],
+          [18.73397, 49.24589],
+          [18.73398, 49.24695],
+          [18.73434, 49.2477],
+          [18.73644, 49.25018],
+          [18.73713, 49.2513],
+          [18.7357, 49.25255],
+          [18.73426, 49.25312],
+          [18.73329, 49.25378],
+          [18.73208, 49.25612],
+          [18.73103, 49.25736],
+          [18.72955, 49.2584],
+          [18.72642, 49.25934],
+          [18.72631, 49.2597],
+          [18.72441, 49.26163],
+          [18.72416, 49.26208],
+          [18.72423, 49.26244],
+          [18.72517, 49.26422],
+          [18.72676, 49.26505],
+          [18.72843, 49.26548],
+          [18.72876, 49.26576],
+          [18.7306, 49.26569],
+          [18.73177, 49.26591],
+          [18.73758, 49.26584],
+          [18.73957, 49.26651],
+          [18.74147, 49.2664],
+          [18.74112, 49.26653],
+          [18.73952, 49.26654],
+          [18.73749, 49.2659],
+          [18.73175, 49.26597],
+          [18.72984, 49.26571],
+          [18.72867, 49.26582],
+          [18.72836, 49.26552],
+          [18.72701, 49.2652],
+          [18.72526, 49.26435],
+          [18.72488, 49.26392],
+          [18.7241, 49.26212],
+          [18.72451, 49.2614],
+          [18.72634, 49.25958],
+          [18.72638, 49.25927],
+          [18.72431, 49.25719],
+          [18.71984, 49.25481],
+          [18.72313, 49.25323],
+          [18.72596, 49.25208],
+          [18.72619, 49.25178],
+          [18.72687, 49.2525],
+          [18.72748, 49.25274],
+          [18.72793, 49.25187],
+          [18.73086, 49.24963],
+          [18.73134, 49.2481],
+          [18.73266, 49.24777],
+          [18.73371, 49.24795],
+          [18.73389, 49.24811],
+          [18.7344, 49.24803],
+          [18.73388, 49.24704],
+          [18.7339, 49.24587],
+          [18.73342, 49.24521]
+        ]
+      }
     }
   ]
 }

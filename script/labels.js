@@ -44,7 +44,7 @@ export const DIFFICULTY = {
  * @returns {string}
  */
 export function shape(loop) {
-  return loop ? "okruh" : "prejazd";
+  return loop ? "okruh" : "kyvadlo";
 }
 
 /**
